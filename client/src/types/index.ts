@@ -43,7 +43,7 @@ export interface ActiveSystemsResponse {
 // ── WebSocket event types ──────────────────────────────────────
 
 export interface DashboardEvent {
-  type: "screenshot" | "log" | "status" | "error" | "done";
+  type: "screenshot" | "log" | "status" | "error" | "done" | "plan" | "verification" | "plan_step_complete";
   data: Record<string, unknown>;
 }
 
@@ -56,6 +56,29 @@ export interface NavigateMessage {
 export interface StopMessage {
   type: "stop";
   device_id: string;
+}
+
+// ── Agent loop types ───────────────────────────────────────────
+
+export interface PlanStep {
+  step_number: number;
+  description: string;
+  expected_state: string;
+  completed: boolean;
+}
+
+export interface Plan {
+  goal: string;
+  steps: PlanStep[];
+  current_step: number;
+  reasoning: string;
+}
+
+export interface VerificationResult {
+  status: "complete" | "in_progress" | "failed" | "blocked" | "needs_human";
+  reasoning: string;
+  progress_percent: number;
+  should_continue: boolean;
 }
 
 // ── UI types ───────────────────────────────────────────────────

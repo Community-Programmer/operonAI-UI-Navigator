@@ -10,23 +10,28 @@ import { useDashboardSocket } from "@/hooks/use-dashboard-socket";
 import {
   ArrowLeft,
   Brain,
+  CheckCircle2,
+  Circle,
   ImageOff,
+  ListChecks,
   Loader2,
   Mic,
   OctagonX,
+  PlayCircle,
   Send,
+  ShieldCheck,
   Trash2,
   Wifi,
   WifiOff,
   Wrench,
 } from "lucide-react";
-import type { LogEntry } from "@/types";
+import type { LogEntry, Plan, VerificationResult } from "@/types";
 
 export function NavigatePage() {
   const { deviceId } = useParams<{ deviceId: string }>();
   const { token } = useAuth();
   const navigate = useNavigate();
-  const { connected, screenshot, logs, taskRunning, navigate: sendGoal, stop, clearLogs } =
+  const { connected, screenshot, logs, taskRunning, plan, verification, navigate: sendGoal, stop, clearLogs } =
     useDashboardSocket(token);
 
   const [goal, setGoal] = useState("");
@@ -125,28 +130,34 @@ export function NavigatePage() {
           </CardContent>
         </Card>
 
-        <Card className="flex min-h-0 flex-col overflow-hidden border-slate-200 bg-white/95 shadow-sm">
-          <CardHeader className="flex-row items-center justify-between py-3">
-            <CardTitle className="text-sm text-slate-900">Activity Log</CardTitle>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-600 hover:bg-slate-100 hover:text-slate-900" onClick={clearLogs}>
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </CardHeader>
-          <Separator className="bg-slate-200" />
-          <div className="min-h-0 flex-1 overflow-y-auto px-4">
-            <div className="space-y-2 py-3">
-              {logs.length === 0 && (
-                <p className="text-center text-xs text-slate-500">
-                  Enter a goal below to get started
-                </p>
-              )}
-              {logs.map((log) => (
-                <LogItem key={log.id} log={log} />
-              ))}
-              <div ref={logEndRef} />
+        <div className="flex min-h-0 flex-col gap-4">
+          {/* Plan panel */}
+          {plan && <PlanPanel plan={plan} verification={verification} />}
+
+          {/* Activity Log */}
+          <Card className="flex min-h-0 flex-1 flex-col overflow-hidden border-slate-200 bg-white/95 shadow-sm">
+            <CardHeader className="flex-row items-center justify-between py-3">
+              <CardTitle className="text-sm text-slate-900">Activity Log</CardTitle>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-600 hover:bg-slate-100 hover:text-slate-900" onClick={clearLogs}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </CardHeader>
+            <Separator className="bg-slate-200" />
+            <div className="min-h-0 flex-1 overflow-y-auto px-4">
+              <div className="space-y-2 py-3">
+                {logs.length === 0 && (
+                  <p className="text-center text-xs text-slate-500">
+                    Enter a goal below to get started
+                  </p>
+                )}
+                {logs.map((log) => (
+                  <LogItem key={log.id} log={log} />
+                ))}
+                <div ref={logEndRef} />
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
       </div>
 
       <Card className="shrink-0 border-slate-200 bg-white/95 shadow-sm">
@@ -219,5 +230,63 @@ function LogItem({ log }: { log: LogEntry }) {
         {log.message}
       </span>
     </div>
+  );
+}
+
+function PlanPanel({ plan, verification }: { plan: Plan; verification: VerificationResult | null }) {
+  return (
+    <Card className="shrink-0 border-slate-200 bg-white/95 shadow-sm">
+      <CardHeader className="py-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-1.5 text-sm text-slate-900">
+            <ListChecks className="h-4 w-4" />
+            Plan
+          </CardTitle>
+          {verification && (
+            <Badge
+              variant={verification.status === "complete" ? "default" : "secondary"}
+              className="text-[10px]"
+            >
+              <ShieldCheck className="mr-1 h-3 w-3" />
+              {verification.progress_percent}%
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+      <Separator className="bg-slate-200" />
+      <CardContent className="space-y-1 p-3">
+        {plan.steps.map((step) => {
+          const isCurrent = step.step_number === plan.current_step && !step.completed;
+          return (
+            <div
+              key={step.step_number}
+              className={`flex items-start gap-2 rounded-md px-2 py-1.5 text-xs ${
+                step.completed
+                  ? "text-slate-400"
+                  : isCurrent
+                    ? "bg-blue-50 text-slate-800"
+                    : "text-slate-500"
+              }`}
+            >
+              {step.completed ? (
+                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
+              ) : isCurrent ? (
+                <PlayCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-500" />
+              ) : (
+                <Circle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-300" />
+              )}
+              <span className={step.completed ? "line-through" : ""}>
+                {step.description}
+              </span>
+            </div>
+          );
+        })}
+        {verification && verification.reasoning && (
+          <p className="mt-2 border-t border-slate-100 pt-2 text-[10px] leading-relaxed text-slate-500">
+            {verification.reasoning}
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }

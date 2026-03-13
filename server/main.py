@@ -39,6 +39,7 @@ from server.models.schemas import (
     TokenResponse,
 )
 from server.navigator_agent.agent import root_agent
+from server.navigator_agent.agent_loop import run_agent_loop
 from server.navigator_agent.live_agent import live_agent
 from server.navigator_agent.live_tools import (
     register_live_queue,
@@ -366,7 +367,17 @@ async def ws_dashboard(websocket: WebSocket, token: str = Query(...)):
                     })
                     continue
 
-                asyncio.create_task(_run_navigation(user_id, device_id, goal))
+                asyncio.create_task(
+                    run_agent_loop(
+                        user_id=user_id,
+                        device_id=device_id,
+                        goal=goal,
+                        runner=runner,
+                        session_service=session_service,
+                        memory_service=memory_service,
+                        app_name=APP_NAME,
+                    )
+                )
 
             elif msg_type == "stop":
                 device_id = data.get("device_id", "")
@@ -558,280 +569,6 @@ async def ws_voice(
                 "device_id": device_id,
             },
         })
-
-
-# ── Navigation orchestration ───────────────────────────────────────
-
-
-def _format_elements(elements: list[dict]) -> str:
-    """Format detected elements into descriptive text for the LLM prompt."""
-    if not elements:
-        return "No UI elements detected."
-    lines = []
-    for el in elements:
-        eid = el["id"]
-        cat = el.get("category", "element")
-        text = el.get("text", "")
-        cx, cy = el["center_x"], el["center_y"]
-        bbox = el.get("bbox", [0, 0, 0, 0])
-        conf = el.get("confidence", 0)
-        source = el.get("source", "?")
-
-        parts = [f"[{eid}] {cat}"]
-        if text:
-            parts.append(f'"{text}"')
-        parts.append(
-            f"bbox=[{bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}] "
-            f"center=({cx},{cy}) conf={conf:.0%} src={source}"
-        )
-        lines.append(" ".join(parts))
-    return "\n".join(lines)
-
-
-def _is_task_complete(text: str) -> bool:
-    """Check if the agent explicitly signaled task completion.
-
-    Only matches intentional completion signals, not incidental uses
-    of the word 'done' in normal sentences.
-    """
-    upper = text.upper().strip()
-    # Match "TASK_COMPLETE" anywhere — this is our explicit signal
-    if "TASK_COMPLETE" in upper:
-        return True
-    return False
-
-
-async def _run_navigation(user_id: str, device_id: str, goal: str) -> None:
-    """Run the ADK agent to accomplish a user's navigation goal.
-
-    Uses an explicit screenshot→action loop:
-    1. Capture segmented screenshot from device (OmniParser detects UI elements)
-    2. Send annotated screenshot + element list to the agent as a user message
-    3. Agent responds with tool calls (click_element, type, etc.) which execute remotely
-    4. Repeat until the agent says the task is done or max iterations reached
-    """
-    connection_manager.active_tasks[device_id] = True
-    connection_manager.interrupt_flags[device_id] = False
-
-    MAX_ITERATIONS = 30
-
-    try:
-        await connection_manager.broadcast_to_dashboards(user_id, {
-            "type": "status",
-            "data": {"message": f"Starting task: {goal}", "device_id": device_id},
-        })
-
-        info = connection_manager.device_info.get(device_id, {})
-        screen_width = info.get("screen_width", 1920)
-        screen_height = info.get("screen_height", 1080)
-        scale_factor = info.get("scale_factor", 1.0)
-
-        session_id = f"nav_{device_id}_{uuid.uuid4().hex[:8]}"
-        await session_service.create_session(
-            app_name=APP_NAME,
-            user_id=user_id,
-            session_id=session_id,
-            state={
-                "device_id": device_id,
-                "user_id": user_id,
-                "screen_width": screen_width,
-                "screen_height": screen_height,
-                "scale_factor": scale_factor,
-                "os_name": "Windows",
-                "elements": [],
-            },
-        )
-
-        task_done = False
-
-        for iteration in range(MAX_ITERATIONS):
-            if connection_manager.interrupt_flags.get(device_id):
-                await connection_manager.broadcast_to_dashboards(user_id, {
-                    "type": "done",
-                    "data": {"message": "Task interrupted by user", "device_id": device_id},
-                })
-                break
-
-            # ── Step 1: capture a segmented screenshot ────────────────
-            if iteration > 0:
-                await asyncio.sleep(0.5)  # Let screen settle after actions
-
-            screenshot_b64 = ""
-            elements = []
-
-            for _attempt in range(2):
-                screenshot_result = await connection_manager.send_to_device(
-                    device_id,
-                    {"action": "screenshot", "parameters": {"segment": True}},
-                    timeout=60.0,
-                )
-                if screenshot_result.get("status") == "success":
-                    data = screenshot_result.get("data", {})
-                    screenshot_b64 = data.get("screenshot", "")
-                    elements = data.get("elements", [])
-                    screen_info = data.get("screen_info")
-                    if screen_info:
-                        screen_width = screen_info.get("screen_width", screen_width)
-                        screen_height = screen_info.get("screen_height", screen_height)
-                    if screenshot_b64:
-                        break
-                await asyncio.sleep(1.0)
-
-            if not screenshot_b64:
-                logger.warning("Failed to capture screenshot on iteration %d", iteration)
-                await connection_manager.broadcast_to_dashboards(user_id, {
-                    "type": "log",
-                    "data": {"action": "warning", "message": f"Screenshot failed on iteration {iteration + 1}, retrying..."},
-                })
-                continue
-
-            # Update session state with detected elements
-            session = await session_service.get_session(
-                app_name=APP_NAME, user_id=user_id, session_id=session_id,
-            )
-            if session:
-                session.state["elements"] = elements
-                session.state["screen_width"] = screen_width
-                session.state["screen_height"] = screen_height
-
-            connection_manager.latest_screenshots[device_id] = screenshot_b64
-            await connection_manager.broadcast_to_dashboards(user_id, {
-                "type": "screenshot",
-                "data": {"image": screenshot_b64},
-            })
-
-            # Build compact element list for the prompt
-            element_text = _format_elements(elements)
-            num_elements = len(elements)
-
-            parts: list[genai_types.Part] = []
-            parts.append(
-                genai_types.Part(
-                    inline_data=genai_types.Blob(
-                        mime_type="image/jpeg",
-                        data=base64.b64decode(screenshot_b64),
-                    )
-                )
-            )
-
-            # ── Step 2: build the prompt for this iteration ─────────────
-            if iteration == 0:
-                prompt = (
-                    f"GOAL: {goal}\n\n"
-                    f"Screen: {screen_width}x{screen_height} pixels (Windows)\n\n"
-                    f"Above is the current annotated screenshot with {num_elements} detected UI elements.\n"
-                    f"Color-coded bounding boxes: green=icon, blue=button, purple=text_field, red=text, yellow=image, orange=checkbox.\n\n"
-                    f"DETECTED ELEMENTS (bbox=[x1,y1,x2,y2] in screen pixels):\n{element_text}\n\n"
-                    f"INSTRUCTIONS:\n"
-                    f"1. Analyze the screenshot visually to understand the current UI state.\n"
-                    f"2. Cross-reference with the element list above — use text labels and bbox positions to identify elements.\n"
-                    f"3. If the annotated image is cluttered, rely more on the text list and your visual understanding of the raw UI underneath.\n"
-                    f"4. Plan your approach: what is the first step toward the goal?\n"
-                    f"5. Execute 3-5 actions, then stop and wait for the next screenshot to verify."
-                )
-            else:
-                prompt = (
-                    f"GOAL (reminder): {goal}\n\n"
-                    f"Updated screenshot (step {iteration + 1}/{MAX_ITERATIONS}). {num_elements} elements detected.\n\n"
-                    f"DETECTED ELEMENTS:\n{element_text}\n\n"
-                    f"Analyze: What changed since your last actions? Did they work? "
-                    f"Cross-reference the annotated image with the element list to verify.\n"
-                    f"Continue toward the goal. If ALL steps are truly complete and verified on screen, say TASK_COMPLETE."
-                )
-            parts.insert(0, genai_types.Part(text=prompt))
-
-            user_message = genai_types.Content(role="user", parts=parts)
-
-            # ── Step 3: run the agent for one turn ──────────────────────
-            agent_error = False
-            try:
-                async for event in runner.run_async(
-                    user_id=user_id,
-                    session_id=session_id,
-                    new_message=user_message,
-                ):
-                    if connection_manager.interrupt_flags.get(device_id):
-                        break
-
-                    if event.content and event.content.parts:
-                        for part in event.content.parts:
-                            # Thinking / reasoning parts (from BuiltInPlanner)
-                            if getattr(part, "thought", False) and part.text and part.text.strip():
-                                await connection_manager.broadcast_to_dashboards(user_id, {
-                                    "type": "log",
-                                    "data": {
-                                        "action": "thinking",
-                                        "message": part.text.strip(),
-                                        "author": event.author,
-                                    },
-                                })
-                            # Regular text response
-                            elif part.text and part.text.strip():
-                                await connection_manager.broadcast_to_dashboards(user_id, {
-                                    "type": "log",
-                                    "data": {
-                                        "action": "agent_response",
-                                        "message": part.text.strip(),
-                                        "author": event.author,
-                                    },
-                                })
-
-                                # Check if the agent explicitly signaled completion
-                                if _is_task_complete(part.text):
-                                    task_done = True
-
-                    if event.is_final_response():
-                        break
-
-            except Exception as agent_exc:
-                logger.error("Agent error on iteration %d: %s", iteration, agent_exc)
-                agent_error = True
-                await connection_manager.broadcast_to_dashboards(user_id, {
-                    "type": "log",
-                    "data": {"action": "warning", "message": f"Agent error: {agent_exc}. Retrying..."},
-                })
-
-            if task_done or connection_manager.interrupt_flags.get(device_id):
-                break
-
-            # On agent error, wait before retrying
-            if agent_error:
-                await asyncio.sleep(2.0)
-
-        # ── Final status ────────────────────────────────────────────────
-        if task_done:
-            await connection_manager.broadcast_to_dashboards(user_id, {
-                "type": "done",
-                "data": {"message": "Task completed successfully", "device_id": device_id},
-            })
-        elif not connection_manager.interrupt_flags.get(device_id):
-            await connection_manager.broadcast_to_dashboards(user_id, {
-                "type": "done",
-                "data": {"message": f"Reached max iterations ({MAX_ITERATIONS})", "device_id": device_id},
-            })
-
-    except Exception as e:
-        logger.error("Navigation error: %s", e, exc_info=True)
-        await connection_manager.broadcast_to_dashboards(user_id, {
-            "type": "error",
-            "data": {
-                "message": f"Navigation error: {str(e)}",
-                "device_id": device_id,
-            },
-        })
-    finally:
-        # Save session to memory for future context
-        try:
-            session = await session_service.get_session(
-                app_name=APP_NAME, user_id=user_id, session_id=session_id,
-            )
-            if session:
-                await memory_service.add_session_to_memory(session)
-        except Exception as mem_err:
-            logger.warning("Failed to save session to memory: %s", mem_err)
-
-        connection_manager.active_tasks.pop(device_id, None)
-        connection_manager.interrupt_flags.pop(device_id, None)
 
 
 # ── Entry point ─────────────────────────────────────────────────────

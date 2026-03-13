@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { DashboardEvent, LogEntry, NavigateMessage, StopMessage } from "@/types";
+import type { DashboardEvent, LogEntry, NavigateMessage, Plan, StopMessage, VerificationResult } from "@/types";
 import { wsUrl } from "@/lib/api";
 
 export function useDashboardSocket(token: string | null) {
@@ -8,6 +8,8 @@ export function useDashboardSocket(token: string | null) {
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [taskRunning, setTaskRunning] = useState(false);
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const [verification, setVerification] = useState<VerificationResult | null>(null);
 
   // Connect / disconnect lifecycle
   useEffect(() => {
@@ -87,11 +89,39 @@ export function useDashboardSocket(token: string | null) {
       case "error":
         addLog("error", (event.data.message as string) ?? "Unknown error");
         setTaskRunning(false);
+        setPlan(null);
+        setVerification(null);
         break;
       case "done":
         addLog("done", (event.data.message as string) ?? "Done");
         setTaskRunning(false);
+        setPlan(null);
+        setVerification(null);
         break;
+      case "plan":
+        setPlan(event.data as unknown as Plan);
+        addLog("status", `Plan: ${(event.data as unknown as Plan).steps.length} steps`);
+        break;
+      case "verification": {
+        const v = event.data as unknown as VerificationResult;
+        setVerification(v);
+        addLog("status", `Verification: ${v.status} (${v.progress_percent}%)`);
+        break;
+      }
+      case "plan_step_complete": {
+        const stepNum = event.data.step_number as number;
+        setPlan((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            steps: prev.steps.map((s) =>
+              s.step_number === stepNum ? { ...s, completed: true } : s
+            ),
+            current_step: Math.min(stepNum + 1, prev.steps.length),
+          };
+        });
+        break;
+      }
     }
   }
 
@@ -114,6 +144,8 @@ export function useDashboardSocket(token: string | null) {
       wsRef.current.send(JSON.stringify(msg));
       setTaskRunning(true);
       setLogs([]);
+      setPlan(null);
+      setVerification(null);
     },
     [],
   );
@@ -127,7 +159,11 @@ export function useDashboardSocket(token: string | null) {
     [],
   );
 
-  const clearLogs = useCallback(() => setLogs([]), []);
+  const clearLogs = useCallback(() => {
+    setLogs([]);
+    setPlan(null);
+    setVerification(null);
+  }, []);
 
-  return { connected, screenshot, logs, taskRunning, navigate, stop, clearLogs };
+  return { connected, screenshot, logs, taskRunning, plan, verification, navigate, stop, clearLogs };
 }
