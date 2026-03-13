@@ -457,11 +457,25 @@ async def ws_voice(
     )
 
     # ── RunConfig for bidi-streaming with audio I/O ────────────────
+    # Voice selection — natural-sounding voice for native audio model
+    speech_config = genai_types.SpeechConfig(
+        voice_config=genai_types.VoiceConfig(
+            prebuilt_voice_config=genai_types.PrebuiltVoiceConfig(
+                voice_name="Kore",
+            )
+        )
+    )
+
     run_config = RunConfig(
         streaming_mode=StreamingMode.BIDI,
         response_modalities=["AUDIO"],
+        speech_config=speech_config,
         input_audio_transcription=genai_types.AudioTranscriptionConfig(),
         output_audio_transcription=genai_types.AudioTranscriptionConfig(),
+        # Enable proactive audio — agent can initiate/respond faster
+        proactivity=genai_types.ProactivityConfig(proactive_audio=True),
+        # Enable emotional awareness in voice output
+        enable_affective_dialog=True,
     )
 
     # Create the LiveRequestQueue and register it so the take_screenshot
@@ -519,29 +533,33 @@ async def ws_voice(
             await websocket.send_text(event_json)
 
             # Broadcast transcriptions to dashboards for live monitoring
-            out_text = getattr(event.output_transcription, "text", None) if event.output_transcription else None
-            in_text = getattr(event.input_transcription, "text", None) if event.input_transcription else None
+            if event.output_transcription:
+                out_text = getattr(event.output_transcription, "text", None)
+                if out_text:
+                    await connection_manager.broadcast_to_dashboards(user_id, {
+                        "type": "log",
+                        "data": {
+                            "action": "agent_voice",
+                            "message": out_text,
+                            "author": "voice_navigator",
+                        },
+                    })
 
-            if out_text:
-                await connection_manager.broadcast_to_dashboards(user_id, {
-                    "type": "log",
-                    "data": {
-                        "action": "agent_voice",
-                        "message": out_text,
-                        "author": "voice_navigator",
-                    },
-                })
-            if in_text:
-                await connection_manager.broadcast_to_dashboards(user_id, {
-                    "type": "log",
-                    "data": {
-                        "action": "user_voice",
-                        "message": in_text,
-                        "author": "user",
-                    },
-                })
+            if event.input_transcription:
+                in_text = getattr(event.input_transcription, "text", None)
+                if in_text:
+                    await connection_manager.broadcast_to_dashboards(user_id, {
+                        "type": "log",
+                        "data": {
+                            "action": "user_voice",
+                            "message": in_text,
+                            "author": "user",
+                        },
+                    })
 
-    # ── Run both tasks concurrently ────────────────────────────────
+    # ── Run both tasks concurrently with proper cancellation ───────
+    upstream = None
+    downstream = None
     try:
         await connection_manager.broadcast_to_dashboards(user_id, {
             "type": "status",
@@ -551,13 +569,44 @@ async def ws_voice(
             },
         })
 
-        await asyncio.gather(upstream_task(), downstream_task())
+        upstream = asyncio.create_task(upstream_task(), name="voice_upstream")
+        downstream = asyncio.create_task(downstream_task(), name="voice_downstream")
+
+        # Wait for EITHER task to finish (the other is cancelled)
+        done, pending = await asyncio.wait(
+            {upstream, downstream},
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+
+        # Cancel remaining task
+        for task in pending:
+            task.cancel()
+            try:
+                await task
+            except (asyncio.CancelledError, Exception):
+                pass
+
+        # Re-raise any exceptions from completed tasks
+        for task in done:
+            if task.exception() and not isinstance(task.exception(), (asyncio.CancelledError, WebSocketDisconnect)):
+                raise task.exception()
 
     except WebSocketDisconnect:
         logger.info("Voice client disconnected: %s", device_id)
+    except asyncio.CancelledError:
+        logger.info("Voice session cancelled: %s", device_id)
     except Exception as e:
         logger.error("Voice session error: %s", e, exc_info=True)
     finally:
+        # Clean up tasks if they're still running
+        for task in [upstream, downstream]:
+            if task and not task.done():
+                task.cancel()
+                try:
+                    await task
+                except (asyncio.CancelledError, Exception):
+                    pass
+
         live_request_queue.close()
         unregister_live_queue(device_id)
         unregister_live_websocket(device_id)

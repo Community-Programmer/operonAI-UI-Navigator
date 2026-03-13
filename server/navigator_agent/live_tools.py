@@ -3,6 +3,9 @@
 The key difference from the standard tools is the `take_screenshot` tool,
 which captures screenshots ON DEMAND (not continuously) and sends the image
 to the model's visual context via the LiveRequestQueue.
+
+Uses the perception layer for typed UI element detection (same as the standard
+agent loop) for improved accuracy.
 """
 
 from __future__ import annotations
@@ -15,6 +18,8 @@ from google.adk.tools import ToolContext
 from google.genai import types
 
 from server.connections.manager import connection_manager
+from server.navigator_agent.action_schema import format_ui_state_for_llm
+from server.navigator_agent.perception import build_ui_state
 
 logger = logging.getLogger(__name__)
 
@@ -48,45 +53,21 @@ def unregister_live_websocket(device_id: str) -> None:
     _live_websockets.pop(device_id, None)
 
 
-def _format_elements(elements: list[dict]) -> str:
-    """Format detected elements into descriptive text for the model."""
-    if not elements:
-        return "No UI elements detected."
-    lines = []
-    for el in elements:
-        eid = el["id"]
-        cat = el.get("category", "element")
-        text = el.get("text", "")
-        cx, cy = el["center_x"], el["center_y"]
-        bbox = el.get("bbox", [0, 0, 0, 0])
-        conf = el.get("confidence", 0)
-
-        parts = [f"[{eid}] {cat}"]
-        if text:
-            parts.append(f'"{text}"')
-        parts.append(
-            f"bbox=[{bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}] "
-            f"center=({cx},{cy}) conf={conf:.0%}"
-        )
-        lines.append(" ".join(parts))
-    return "\n".join(lines)
-
-
 async def take_screenshot(tool_context: ToolContext) -> dict:
     """Capture the current screen state and analyze all UI elements.
 
-    Takes a screenshot of the remote desktop, detects interactive UI elements
-    (buttons, text fields, icons, checkboxes, etc.), and returns a detailed
-    list describing what is on screen. The screenshot image is also sent to
+    Takes a screenshot of the remote desktop, runs typed UI element detection
+    (buttons, inputs, text, icons, checkboxes, dropdowns, links, tabs, menus),
+    and returns a detailed element list. The screenshot image is also sent to
     your visual context so you can see it.
 
     ALWAYS call this BEFORE performing actions and AFTER performing actions
     to verify results. Never act blind.
 
     Returns:
-        dict with screen size, number of detected elements, and a text list
-        of every element with its [ID], category, text, bounding box, and
-        center coordinates.
+        dict with screen size, number of detected elements, and a typed text
+        list of every element with its [ID], type, text, bounding box, center
+        coordinates, and confidence score.
     """
     device_id = tool_context.state.get("device_id", "")
     user_id = tool_context.state.get("user_id", "")
@@ -120,13 +101,17 @@ async def take_screenshot(tool_context: ToolContext) -> dict:
 
     # Update session state with detected elements so click tools can use them
     tool_context.state["elements"] = elements
+    sw = tool_context.state.get("screen_width", 1920)
+    sh = tool_context.state.get("screen_height", 1080)
     if screen_info:
-        tool_context.state["screen_width"] = screen_info.get(
-            "screen_width", tool_context.state.get("screen_width", 1920)
-        )
-        tool_context.state["screen_height"] = screen_info.get(
-            "screen_height", tool_context.state.get("screen_height", 1080)
-        )
+        sw = screen_info.get("screen_width", sw)
+        sh = screen_info.get("screen_height", sh)
+        tool_context.state["screen_width"] = sw
+        tool_context.state["screen_height"] = sh
+
+    # Build typed UIState via the perception layer for accurate element typing
+    ui_state = build_ui_state(screenshot_b64, elements, sw, sh)
+    element_text = format_ui_state_for_llm(ui_state)
 
     # Send the annotated screenshot image to the model's visual context
     queue = _live_queues.get(device_id)
@@ -156,20 +141,16 @@ async def take_screenshot(tool_context: ToolContext) -> dict:
         except Exception as e:
             logger.warning("Failed to send screenshot to voice client: %s", e)
 
-    # Return element descriptions as text
-    element_text = _format_elements(elements)
-    sw = tool_context.state.get("screen_width", 1920)
-    sh = tool_context.state.get("screen_height", 1080)
-
     return {
         "status": "success",
         "screen_size": f"{sw}x{sh}",
-        "num_elements": len(elements),
+        "num_elements": ui_state.element_count,
         "elements": element_text,
         "note": (
             "The annotated screenshot has been sent to your visual context. "
-            "Elements are numbered [1], [2], [3]... with color-coded bounding "
-            "boxes. Use click_element(N) to interact with element [N]."
+            "Elements are numbered [1], [2], [3]… with typed labels (button, "
+            "input, text, icon, checkbox, dropdown, link, tab, menu_item). "
+            "Use click_element(N) to interact with element [N]."
         ),
     }
 

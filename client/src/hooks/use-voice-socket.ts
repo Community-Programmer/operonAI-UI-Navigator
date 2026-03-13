@@ -33,6 +33,11 @@ export function useVoiceSocket(
   const recorderContextRef = useRef<AudioContext | null>(null);
   const recorderNodeRef = useRef<AudioWorkletNode | null>(null);
 
+  // Transcription accumulation — track the current partial transcription
+  // so we update the same log entry instead of creating one per fragment
+  const inputTranscriptIdRef = useRef<string | null>(null);
+  const outputTranscriptIdRef = useRef<string | null>(null);
+
   const [connected, setConnected] = useState(false);
   const [listening, setListening] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -41,13 +46,55 @@ export function useVoiceSocket(
   // ── Add log entry ─────────────────────────────────────────────
   const addLog = useCallback(
     (type: LogEntry["type"], message: string, author?: string) => {
+      const id = crypto.randomUUID();
       setLogs((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), timestamp: Date.now(), type, message, author },
+        { id, timestamp: Date.now(), type, message, author },
       ]);
+      return id;
     },
     [],
   );
+
+  // ── Update or create a log entry (for transcription accumulation) ──
+  const upsertLog = useCallback(
+    (
+      existingId: string | null,
+      type: LogEntry["type"],
+      message: string,
+      author?: string,
+    ): string => {
+      if (existingId) {
+        // Update the existing log entry's message
+        setLogs((prev) =>
+          prev.map((entry) =>
+            entry.id === existingId ? { ...entry, message } : entry,
+          ),
+        );
+        return existingId;
+      }
+      // No existing entry — create a new one
+      const id = crypto.randomUUID();
+      setLogs((prev) => [
+        ...prev,
+        { id, timestamp: Date.now(), type, message, author },
+      ]);
+      return id;
+    },
+    [],
+  );
+
+  // ── Ensure AudioContext is running (browser autoplay policy) ───
+  const ensureAudioPlaying = useCallback(async () => {
+    const ctx = audioContextRef.current;
+    if (ctx && ctx.state === "suspended") {
+      try {
+        await ctx.resume();
+      } catch {
+        // Ignore — will resume on next user gesture
+      }
+    }
+  }, []);
 
   // ── Setup audio player worklet (24kHz output) ─────────────────
   const setupPlayback = useCallback(async () => {
@@ -146,25 +193,47 @@ registerProcessor('pcm-player-processor', PCMPlayerProcessor);
           return;
         }
 
-        // Handle turn complete
+        // Handle turn complete — finalize current transcription entries
         if (event.turnComplete) {
+          inputTranscriptIdRef.current = null;
+          outputTranscriptIdRef.current = null;
           return;
         }
 
-        // Handle interrupted — stop audio playback
+        // Handle interrupted — immediately clear audio buffer
         if (event.interrupted) {
           audioPlayerNodeRef.current?.port.postMessage({ command: "endOfAudio" });
+          // Reset transcript tracking for the interrupted turn
+          outputTranscriptIdRef.current = null;
           return;
         }
 
-        // Input transcription (user speech → text)
+        // Input transcription (user speech → text) — accumulate into one entry
         if (event.inputTranscription?.text) {
-          addLog("user_voice", event.inputTranscription.text, "user");
+          inputTranscriptIdRef.current = upsertLog(
+            inputTranscriptIdRef.current,
+            "user_voice",
+            event.inputTranscription.text,
+            "user",
+          );
+          // If this transcription is finished, reset for next utterance
+          if (event.inputTranscription.finished) {
+            inputTranscriptIdRef.current = null;
+          }
         }
 
-        // Output transcription (agent speech → text)
+        // Output transcription (agent speech → text) — accumulate into one entry
         if (event.outputTranscription?.text) {
-          addLog("agent_voice", event.outputTranscription.text, "voice_navigator");
+          outputTranscriptIdRef.current = upsertLog(
+            outputTranscriptIdRef.current,
+            "agent_voice",
+            event.outputTranscription.text,
+            "voice_navigator",
+          );
+          // If this transcription is finished, reset for next utterance
+          if (event.outputTranscription.finished) {
+            outputTranscriptIdRef.current = null;
+          }
         }
 
         // Content events (audio and/or text)
@@ -174,6 +243,8 @@ registerProcessor('pcm-player-processor', PCMPlayerProcessor);
             if (part.inlineData?.data) {
               const mimeType = part.inlineData.mimeType || "";
               if (mimeType.startsWith("audio/pcm") && audioPlayerNodeRef.current) {
+                // Ensure AudioContext is running before feeding audio
+                ensureAudioPlaying();
                 const pcmBuffer = base64ToArrayBuffer(part.inlineData.data);
                 audioPlayerNodeRef.current.port.postMessage(pcmBuffer);
               }
@@ -214,12 +285,15 @@ registerProcessor('pcm-player-processor', PCMPlayerProcessor);
         // Ignore parse errors
       }
     };
-  }, [token, deviceId, setupPlayback, addLog]);
+  }, [token, deviceId, setupPlayback, addLog, upsertLog, ensureAudioPlaying]);
 
   // ── Start microphone capture and stream audio ─────────────────
   const startMic = useCallback(async () => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
     if (mediaStreamRef.current) return;
+
+    // Resume playback AudioContext on user gesture (mic button click)
+    await ensureAudioPlaying();
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -270,7 +344,7 @@ registerProcessor('pcm-recorder-processor', PCMProcessor);
     } catch (err) {
       addLog("error", `Microphone access denied: ${err}`);
     }
-  }, [addLog]);
+  }, [addLog, ensureAudioPlaying]);
 
   // ── Stop microphone ───────────────────────────────────────────
   const stopMic = useCallback(() => {
