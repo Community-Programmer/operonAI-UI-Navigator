@@ -51,7 +51,7 @@ CLASS_MAP = {
 # Filters out tiny noise.
 _MIN_AREA = 100
 # Max number of elements to send — limits visual/prompt clutter.
-_MAX_ELEMENTS = 60
+_MAX_ELEMENTS = 150
 
 OMNIPARSER_REPOS = [
     ("microsoft/OmniParser-v2.0", "icon_detect/model.pt"),

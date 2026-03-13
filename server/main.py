@@ -23,12 +23,12 @@ from google.genai import types as genai_types
 # Suppress Pydantic serialization warnings (ADK internal mismatch)
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
-from auth.jwt_handler import create_device_token, create_user_token, verify_token
-from auth.user_store import user_store
-from config import CORS_ORIGINS
-from connections.manager import connection_manager
-from devices.device_store import device_store
-from models.schemas import (
+from server.auth.jwt_handler import create_device_token, create_user_token, verify_token
+from server.auth.user_store import user_store
+from server.config import CORS_ORIGINS
+from server.connections.manager import connection_manager
+from server.devices.device_store import device_store
+from server.models.schemas import (
     ActiveSystemsResponse,
     DeviceInfo,
     LoginRequest,
@@ -38,15 +38,15 @@ from models.schemas import (
     SegmentResponse,
     TokenResponse,
 )
-from navigator_agent.agent import root_agent
-from navigator_agent.live_agent import live_agent
-from navigator_agent.live_tools import (
+from server.navigator_agent.agent import root_agent
+from server.navigator_agent.live_agent import live_agent
+from server.navigator_agent.live_tools import (
     register_live_queue,
     unregister_live_queue,
     register_live_websocket,
     unregister_live_websocket,
 )
-from segmentation.service import segment_screenshot_payload
+from server.segmentation.service import segment_screenshot_payload
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
