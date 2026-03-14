@@ -2,11 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
-  Bot,
   Check,
   LogOut,
-  Mic,
-  MonitorSmartphone,
   Radio,
   ScrollText,
   Settings,
@@ -32,6 +29,7 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  type CarouselApi,
 } from "@/components/ui/carousel";
 
 type FeatureImage = {
