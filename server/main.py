@@ -48,6 +48,7 @@ from server.navigator_agent.live_tools import (
     unregister_live_websocket,
 )
 from server.segmentation.service import segment_screenshot_payload
+from server.sessions.session_logger import list_sessions, get_session_detail, count_sessions
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -258,6 +259,36 @@ async def segment_screenshot(payload: SegmentRequest, token: str = Query(...)):
         raise HTTPException(status_code=500, detail=f"Segmentation failed: {e}") from e
 
     return SegmentResponse(**result)
+
+
+# ── Session monitoring endpoints ────────────────────────────────────
+
+@app.get("/api/sessions")
+async def api_list_sessions(
+    token: str = Query(...),
+    limit: int = Query(50, ge=1, le=200),
+    skip: int = Query(0, ge=0),
+    status: str | None = Query(None),
+    device_id: str | None = Query(None),
+):
+    payload = _get_current_user(token)
+    user_id = payload["sub"]
+    sessions = await asyncio.to_thread(
+        list_sessions, user_id,
+        limit=limit, skip=skip, status=status, device_id=device_id,
+    )
+    total = await asyncio.to_thread(count_sessions, user_id)
+    return {"sessions": sessions, "total": total}
+
+
+@app.get("/api/sessions/{session_id}")
+async def api_get_session(session_id: str, token: str = Query(...)):
+    payload = _get_current_user(token)
+    user_id = payload["sub"]
+    detail = await asyncio.to_thread(get_session_detail, session_id, user_id)
+    if detail is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return detail
 
 
 # ── WebSocket: Device (Local Helper) ───────────────────────────────

@@ -39,6 +39,8 @@ from server.navigator_agent.action_schema import (
 from server.navigator_agent.perception import build_ui_state, get_elements_summary
 from server.navigator_agent.planner import create_plan, get_current_step_context, advance_plan
 from server.navigator_agent.verifier import verify_goal_completion, should_verify
+from server.sessions.session_logger import SessionLogger
+from server.storage.gcs import upload_screenshot, upload_verification_screenshot
 
 logger = logging.getLogger(__name__)
 
@@ -297,6 +299,16 @@ async def run_agent_loop(
             },
         )
 
+        # ── Session logger (MongoDB + GCS) ──────────────────────
+        device_name = info.get("device_name", "Unknown")
+        sess_logger = SessionLogger(
+            session_id=session_id,
+            user_id=user_id,
+            device_id=device_id,
+            device_name=device_name,
+            goal=goal,
+        )
+
         # ═══ Phase 0: Initial Observation ═══════════════════════
         await _broadcast_log(user_id, "status", "Capturing initial screenshot...")
 
@@ -315,6 +327,21 @@ async def run_agent_loop(
 
         await _broadcast_plan(user_id, plan)
         logger.info("Plan: %d steps. Reasoning: %s", plan.total_steps, plan.reasoning[:100])
+
+        # Record plan in session log
+        sess_logger.record_plan({
+            "goal": plan.goal,
+            "steps": [
+                {
+                    "step_number": s.step_number,
+                    "description": s.description,
+                    "expected_state": s.expected_state,
+                }
+                for s in plan.steps
+            ],
+            "total_steps": plan.total_steps,
+            "reasoning": plan.reasoning,
+        })
 
         # ═══ Phase 2: Execute Loop ══════════════════════════════
         for iteration in range(MAX_ITERATIONS):
@@ -421,6 +448,7 @@ async def run_agent_loop(
             # Run the navigator agent for one turn
             task_done = False
             agent_response_text = ""
+            captured_tool_calls: list[dict] = []
 
             try:
                 async for event in runner.run_async(
@@ -441,6 +469,24 @@ async def run_agent_loop(
                                     part.text.strip(),
                                     author=event.author,
                                 )
+                            # Tool / function calls
+                            elif getattr(part, "function_call", None):
+                                fc = part.function_call
+                                captured_tool_calls.append({
+                                    "action": fc.name,
+                                    "target": "",
+                                    "parameters": dict(fc.args) if fc.args else {},
+                                    "reason": "",
+                                    "status": "executed",
+                                    "message": "",
+                                })
+                            # Tool / function response
+                            elif getattr(part, "function_response", None):
+                                fr = part.function_response
+                                if captured_tool_calls:
+                                    result = fr.response if hasattr(fr, "response") else {}
+                                    captured_tool_calls[-1]["status"] = str(result.get("status", "success")) if isinstance(result, dict) else "success"
+                                    captured_tool_calls[-1]["message"] = str(result.get("message", "")) if isinstance(result, dict) else str(result)[:200]
                             # Regular text response
                             elif part.text and part.text.strip():
                                 agent_response_text += part.text.strip() + " "
@@ -469,6 +515,22 @@ async def run_agent_loop(
 
             # Record the iteration
             loop_state.iterations.append(loop_iteration)
+
+            # ── Upload screenshot & log iteration to MongoDB/GCS ──
+            iter_screenshot_url = await asyncio.to_thread(
+                upload_screenshot, session_id, iteration, ui_state.screenshot_b64,
+            ) if ui_state.screenshot_b64 else None
+
+            # Defer to thread so MongoDB I/O doesn't block the event loop
+            await asyncio.to_thread(
+                sess_logger.record_iteration,
+                iteration,
+                screenshot_url=iter_screenshot_url,
+                agent_reasoning=loop_iteration.agent_reasoning or agent_response_text.strip(),
+                actions=captured_tool_calls,
+                element_count=ui_state.element_count,
+                timestamp=ui_state.timestamp,
+            )
 
             # ── VERIFY ──────────────────────────────────────────
             if task_done or should_verify(iteration, last_verification):
@@ -500,6 +562,32 @@ async def run_agent_loop(
                 last_verification = verification
                 loop_iteration.verification = verification
                 await _broadcast_verification(user_id, verification)
+
+                # Upload verification screenshot to GCS
+                if verify_ui.screenshot_b64:
+                    ver_url = await asyncio.to_thread(
+                        upload_verification_screenshot,
+                        session_id, iteration, verify_ui.screenshot_b64,
+                    )
+                else:
+                    ver_url = None
+
+                # Update the iteration record with verification data
+                ver_data = {
+                    "status": verification.status.value,
+                    "reasoning": verification.reasoning,
+                    "progress_percent": verification.progress_percent,
+                    "should_continue": verification.should_continue,
+                    "screenshot_url": ver_url,
+                }
+                await asyncio.to_thread(
+                    sess_logger.record_iteration,
+                    iteration,
+                    verification=ver_data,
+                    screenshot_url=ver_url,
+                    agent_reasoning=f"[Verification] {verification.reasoning}",
+                    element_count=verify_ui.element_count,
+                )
 
                 # Handle verification result
                 if verification.status == VerificationStatus.COMPLETE:
@@ -600,6 +688,20 @@ async def run_agent_loop(
         })
 
     finally:
+        # Finalize session log
+        try:
+            final_ver = None
+            if last_verification:
+                final_ver = {
+                    "status": last_verification.status.value,
+                    "reasoning": last_verification.reasoning,
+                    "progress_percent": last_verification.progress_percent,
+                    "should_continue": last_verification.should_continue,
+                }
+            await asyncio.to_thread(sess_logger.finalize, loop_state.status, final_ver)
+        except Exception as log_err:
+            logger.warning("Failed to finalize session log: %s", log_err)
+
         # Save session to memory
         try:
             session = await session_service.get_session(

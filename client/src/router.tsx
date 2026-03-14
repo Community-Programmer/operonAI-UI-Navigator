@@ -7,6 +7,8 @@ import { DevicesPage } from "@/pages/devices";
 import { SystemsPage } from "@/pages/systems";
 import { NavigatePage } from "@/pages/navigate";
 import { VoicePage } from "@/pages/voice";
+import { SessionsPage } from "@/pages/sessions";
+import { SessionDetailPage } from "@/pages/session-detail";
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +32,8 @@ export const router = createBrowserRouter([
       { path: "devices", element: <DevicesPage /> },
       { path: "navigate/:deviceId", element: <NavigatePage /> },
       { path: "voice/:deviceId", element: <VoicePage /> },
+      { path: "sessions", element: <SessionsPage /> },
+      { path: "sessions/:sessionId", element: <SessionDetailPage /> },
     ],
   },
   { path: "/devices", element: <Navigate to="/app/devices" replace /> },

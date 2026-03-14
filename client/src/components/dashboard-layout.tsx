@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
-import { Activity, Monitor, LogOut, Navigation } from "lucide-react";
+import { Activity, Monitor, LogOut, Navigation, ScrollText } from "lucide-react";
 
 export function DashboardLayout() {
   const { isLoggedIn, logout, userId } = useAuth();
@@ -61,6 +61,16 @@ export function DashboardLayout() {
                   >
                     <Monitor className="h-4 w-4" />
                     <span>Devices</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    className="text-slate-300 hover:bg-slate-800 hover:text-slate-100 data-[active=true]:bg-slate-200 data-[active=true]:text-slate-950"
+                    isActive={location.pathname.startsWith("/app/sessions")}
+                    onClick={() => navigate("/app/sessions")}
+                  >
+                    <ScrollText className="h-4 w-4" />
+                    <span>Session Logs</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>

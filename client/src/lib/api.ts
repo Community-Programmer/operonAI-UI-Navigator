@@ -4,6 +4,8 @@ import type {
   LoginRequest,
   LoginResponse,
   PairDeviceRequest,
+  SessionDetail,
+  SessionsListResponse,
   TokenResponse,
 } from "@/types";
 
@@ -60,6 +62,26 @@ export function killDevice(deviceId: string, token: string) {
   return request<{ status: string }>(
     `/api/devices/${encodeURIComponent(deviceId)}/kill?token=${encodeURIComponent(token)}`,
     { method: "POST" },
+  );
+}
+
+// ── Sessions ───────────────────────────────────────────────────
+
+export function getSessions(
+  token: string,
+  opts?: { limit?: number; skip?: number; status?: string; device_id?: string },
+) {
+  const params = new URLSearchParams({ token });
+  if (opts?.limit) params.set("limit", String(opts.limit));
+  if (opts?.skip) params.set("skip", String(opts.skip));
+  if (opts?.status) params.set("status", opts.status);
+  if (opts?.device_id) params.set("device_id", opts.device_id);
+  return request<SessionsListResponse>(`/api/sessions?${params.toString()}`);
+}
+
+export function getSessionDetail(sessionId: string, token: string) {
+  return request<SessionDetail>(
+    `/api/sessions/${encodeURIComponent(sessionId)}?token=${encodeURIComponent(token)}`,
   );
 }
 
