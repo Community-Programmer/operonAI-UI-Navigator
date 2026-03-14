@@ -639,15 +639,15 @@ export function SessionDetailPage() {
 
   const cfg = STATUS_CFG[session.status] ?? STATUS_CFG.running;
   const StatusIcon = cfg.icon;
-  const completedSteps =
-    session.plan?.steps.filter(
-      (_, i) =>
-        session.iterations.some(
-          (it) =>
-            it.verification?.progress_percent !== undefined &&
-            it.verification.progress_percent >= ((i + 1) / (session.plan?.total_steps ?? 1)) * 100,
-        ),
-    ).length ?? 0;
+  // const completedSteps =
+  //   session.plan?.steps.filter(
+  //     (_, i) =>
+  //       session.iterations.some(
+  //         (it) =>
+  //           it.verification?.progress_percent !== undefined &&
+  //           it.verification.progress_percent >= ((i + 1) / (session.plan?.total_steps ?? 1)) * 100,
+  //       ),
+  //   ).length ?? 0;
 
   return (
     <div className="mx-auto max-w-5xl space-y-5">
