@@ -16,8 +16,37 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
-import { Activity, Monitor, LogOut, Navigation, ScrollText } from "lucide-react";
+import {
+  Activity,
+  ChevronRight,
+  Compass,
+  LogOut,
+  Mic,
+  Monitor,
+  ScrollText,
+  Sparkles,
+} from "lucide-react";
+
+const NAV_ITEMS = [
+  { label: "Active Systems", path: "/app/systems", icon: Activity, match: (p: string) => p === "/app/systems" },
+  { label: "Devices", path: "/app/devices", icon: Monitor, match: (p: string) => p === "/app/devices" },
+  { label: "Session Logs", path: "/app/sessions", icon: ScrollText, match: (p: string) => p.startsWith("/app/sessions") },
+];
+
+function extractDeviceId(pathname: string): string | null {
+  const m = pathname.match(/^\/app\/(?:navigate|voice)\/(.+)$/);
+  return m ? m[1] : null;
+}
+
+function pageName(pathname: string): string {
+  if (pathname.startsWith("/app/navigate/")) return "Navigate";
+  if (pathname.startsWith("/app/voice/")) return "Voice Control";
+  if (pathname.startsWith("/app/sessions/") && pathname !== "/app/sessions") return "Session Detail";
+  const item = NAV_ITEMS.find((n) => n.match(pathname));
+  return item?.label ?? "Dashboard";
+}
 
 export function DashboardLayout() {
   const { isLoggedIn, logout, userId } = useAuth();
@@ -28,76 +57,139 @@ export function DashboardLayout() {
     return <Navigate to="/login" replace />;
   }
 
+  const initials = userId?.slice(0, 2).toUpperCase() ?? "U";
+  const activeDeviceId = extractDeviceId(location.pathname);
+
   return (
     <SidebarProvider>
-      <Sidebar className="bg-slate-950 text-slate-100">
-        <SidebarHeader className="px-4 py-3">
-          <div className="flex items-center gap-2">
-            <Navigation className="h-5 w-5 text-primary" />
-            <span className="text-sm font-semibold text-slate-100">UI Navigator</span>
-          </div>
+      <Sidebar className="border-r-0 bg-slate-950 text-slate-100">
+        {/* ── Brand ── */}
+        <SidebarHeader className="px-5 py-4">
+          <button
+            onClick={() => navigate("/app/systems")}
+            className="flex items-center gap-2.5 focus:outline-none"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 shadow-lg shadow-blue-500/20">
+              <Sparkles className="h-3.5 w-3.5 text-white" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[13px] font-bold leading-none tracking-tight text-white">
+                UI Navigator
+              </span>
+              <span className="text-[10px] font-medium leading-none text-slate-500">
+                Desktop Automation
+              </span>
+            </div>
+          </button>
         </SidebarHeader>
-        <Separator className="bg-slate-800" />
-        <SidebarContent>
+
+        <Separator className="bg-slate-800/60" />
+
+        {/* ── Navigation ── */}
+        <SidebarContent className="px-3 py-4">
           <SidebarGroup>
-            <SidebarGroupLabel className="text-slate-400">Dashboard</SidebarGroupLabel>
+            <SidebarGroupLabel className="mb-1 px-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+              Workspace
+            </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="text-slate-300 hover:bg-slate-800 hover:text-slate-100 data-[active=true]:bg-slate-200 data-[active=true]:text-slate-950"
-                    isActive={location.pathname === "/app/systems"}
-                    onClick={() => navigate("/app/systems")}
-                  >
-                    <Activity className="h-4 w-4" />
-                    <span>Active Systems</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="text-slate-300 hover:bg-slate-800 hover:text-slate-100 data-[active=true]:bg-slate-200 data-[active=true]:text-slate-950"
-                    isActive={location.pathname === "/app/devices"}
-                    onClick={() => navigate("/app/devices")}
-                  >
-                    <Monitor className="h-4 w-4" />
-                    <span>Devices</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className="text-slate-300 hover:bg-slate-800 hover:text-slate-100 data-[active=true]:bg-slate-200 data-[active=true]:text-slate-950"
-                    isActive={location.pathname.startsWith("/app/sessions")}
-                    onClick={() => navigate("/app/sessions")}
-                  >
-                    <ScrollText className="h-4 w-4" />
-                    <span>Session Logs</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+              <SidebarMenu className="space-y-0.5">
+                {NAV_ITEMS.map((item) => {
+                  const active = item.match(location.pathname);
+                  return (
+                    <SidebarMenuItem key={item.path}>
+                      <SidebarMenuButton
+                        className={`rounded-lg px-3 py-2 text-[13px] font-medium transition-all ${
+                          active
+                            ? "bg-white/10 text-white shadow-sm"
+                            : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                        }`}
+                        isActive={active}
+                        onClick={() => navigate(item.path)}
+                      >
+                        <item.icon className={`h-4 w-4 ${active ? "text-blue-400" : ""}`} />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+
+          {/* Control group — visible when on navigate/voice pages */}
+          {activeDeviceId && (
+            <SidebarGroup className="mt-4">
+              <SidebarGroupLabel className="mb-1 px-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                Control
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-0.5">
+                  {[
+                    { label: "Navigate", path: `/app/navigate/${activeDeviceId}`, icon: Compass, match: (p: string) => p.startsWith("/app/navigate/") },
+                    { label: "Voice", path: `/app/voice/${activeDeviceId}`, icon: Mic, match: (p: string) => p.startsWith("/app/voice/") },
+                  ].map((item) => {
+                    const active = item.match(location.pathname);
+                    return (
+                      <SidebarMenuItem key={item.path}>
+                        <SidebarMenuButton
+                          className={`rounded-lg px-3 py-2 text-[13px] font-medium transition-all ${
+                            active
+                              ? "bg-white/10 text-white shadow-sm"
+                              : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                          }`}
+                          isActive={active}
+                          onClick={() => navigate(item.path)}
+                        >
+                          <item.icon className={`h-4 w-4 ${active ? "text-blue-400" : ""}`} />
+                          <span>{item.label}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
         </SidebarContent>
-        <SidebarFooter className="px-4 py-3">
-          <div className="flex items-center justify-between">
-            <span className="truncate text-xs text-slate-400">
-              {userId?.slice(0, 8)}
-            </span>
-            <Button variant="ghost" size="icon" className="text-slate-300 hover:bg-slate-800 hover:text-slate-100" onClick={() => { logout(); navigate("/login"); }}>
-              <LogOut className="h-4 w-4" />
+
+        {/* ── User footer ── */}
+        <SidebarFooter className="border-t border-slate-800/60 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-8 w-8 shrink-0">
+              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-violet-600 text-[11px] font-bold text-white">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-medium text-slate-200">{userId?.slice(0, 12)}</p>
+              <p className="text-[10px] text-slate-500">Online</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 shrink-0 text-slate-500 hover:bg-white/10 hover:text-rose-400"
+              onClick={() => { logout(); navigate("/login"); }}
+            >
+              <LogOut className="h-3.5 w-3.5" />
             </Button>
           </div>
         </SidebarFooter>
       </Sidebar>
 
-      <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center justify-between border-b bg-white px-4">
-          <div className="flex items-center gap-2">
-            <SidebarTrigger className="-ml-1" />
-            <span className="text-sm font-medium text-slate-700">Operations Dashboard</span>
+      <SidebarInset className="flex flex-col">
+        {/* ── Top bar ── */}
+        <header className="flex h-12 shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4">
+          <SidebarTrigger className="-ml-1 text-slate-500 hover:text-slate-900" />
+          <Separator orientation="vertical" className="h-5 bg-slate-200" />
+          <div className="flex items-center gap-1.5 text-sm text-slate-500">
+            <span>Dashboard</span>
+            <ChevronRight className="h-3 w-3" />
+            <span className="font-medium text-slate-900">{pageName(location.pathname)}</span>
           </div>
-          <span className="text-xs text-slate-500">User: {userId?.slice(0, 8)}</span>
         </header>
-        <main className="flex-1 overflow-auto bg-[radial-gradient(circle_at_top_left,_#ecf6fb_0%,_#f6f8fb_40%,_#f8fafc_100%)] p-5">
+
+        {/* ── Content ── */}
+        <main className="flex-1 overflow-auto bg-slate-50 p-5">
           <Outlet />
         </main>
       </SidebarInset>

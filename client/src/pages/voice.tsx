@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -12,6 +11,7 @@ import {
   Brain,
   Check,
   ImageIcon,
+  MessageSquare,
   Mic,
   MicOff,
   Phone,
@@ -21,8 +21,11 @@ import {
   Wifi,
   WifiOff,
   Wrench,
+  Zap,
 } from "lucide-react";
 import type { LogEntry } from "@/types";
+
+type VoiceTab = "chat" | "reasoning" | "actions" | "log";
 
 export function VoicePage() {
   const { deviceId } = useParams<{ deviceId: string }>();
@@ -42,12 +45,12 @@ export function VoicePage() {
   } = useVoiceSocket(token, deviceId ?? null);
 
   const [textInput, setTextInput] = useState("");
+  const [activeTab, setActiveTab] = useState<VoiceTab>("chat");
   const logEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll log
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [logs]);
+  }, [logs, activeTab]);
 
   function handleTextSend() {
     if (!textInput.trim()) return;
@@ -55,226 +58,386 @@ export function VoicePage() {
     setTextInput("");
   }
 
-  return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col gap-4">
-      <Card className="border-slate-200 bg-white/95 shadow-sm">
-        <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="text-slate-700 hover:bg-slate-100" onClick={() => nav(`/app/navigate/${deviceId}`)}>
-            <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-xl font-semibold text-slate-900">Voice Control</h1>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600">
-                <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-700">
-                  {deviceId}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  {connected ? (
-                    <>
-                      <Wifi className="h-3.5 w-3.5 text-emerald-600" />
-                      Connected
-                    </>
-                  ) : (
-                    <>
-                      <WifiOff className="h-3.5 w-3.5 text-rose-500" />
-                      Disconnected
-                    </>
-                  )}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {connected ? (
-              <Button variant="destructive" size="sm" onClick={disconnect}>
-                <PhoneOff className="mr-2 h-4 w-4" />
-                Disconnect
-              </Button>
-            ) : (
-              <Button size="sm" className="bg-slate-900 text-white hover:bg-slate-800" onClick={connect}>
-                <Phone className="mr-2 h-4 w-4" />
-                Connect
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+  const conversationLogs = logs.filter(
+    (l) => l.type === "user_voice" || l.type === "agent_voice" || l.type === "agent_response",
+  );
+  const thinkingLogs = logs.filter((l) => l.type === "thinking");
+  const toolLogs = logs.filter((l) => l.type === "tool" || l.type === "tool_result");
 
-      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[1fr_380px]">
-        <div className="flex min-h-0 flex-col gap-4">
-          <Card className="min-h-0 flex-1 overflow-hidden border-slate-200 bg-white/95 shadow-sm">
-            {screenshot ? (
-              <div className="flex h-full items-center justify-center bg-black p-2">
+  const tabs: { key: VoiceTab; label: string; count: number }[] = [
+    { key: "chat", label: "Chat", count: conversationLogs.length },
+    { key: "reasoning", label: "Reasoning", count: thinkingLogs.length },
+    { key: "actions", label: "Actions", count: toolLogs.length },
+    { key: "log", label: "Log", count: logs.length },
+  ];
+
+  return (
+    <div className="flex h-[calc(100vh-3.5rem)] flex-col gap-3">
+      {/* ── Top bar ── */}
+      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-500 hover:text-slate-900"
+            onClick={() => nav(`/app/navigate/${deviceId}`)}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <Separator orientation="vertical" className="h-6 bg-slate-200" />
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-semibold text-slate-900">Voice</h1>
+              <Badge
+                variant="outline"
+                className={`text-[10px] ${
+                  connected
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-rose-200 bg-rose-50 text-rose-700"
+                }`}
+              >
+                {connected ? (
+                  <><Wifi className="mr-1 h-3 w-3" /> Connected</>
+                ) : (
+                  <><WifiOff className="mr-1 h-3 w-3" /> Disconnected</>
+                )}
+              </Badge>
+              {listening && (
+                <Badge
+                  variant="outline"
+                  className="border-red-200 bg-red-50 text-[10px] text-red-700"
+                >
+                  <span className="relative mr-1 flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-600" />
+                  </span>
+                  Listening
+                </Badge>
+              )}
+            </div>
+            <p className="mt-0.5 font-mono text-[11px] text-slate-400">{deviceId}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {connected ? (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={disconnect}
+            >
+              <PhoneOff className="h-3.5 w-3.5" />
+              Disconnect
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              className="h-8 gap-1.5 bg-slate-900 text-xs text-white hover:bg-slate-800"
+              onClick={connect}
+            >
+              <Phone className="h-3.5 w-3.5" />
+              Connect
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Main layout ── */}
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1fr_420px]">
+        {/* Left column: screenshot + mic */}
+        <div className="flex min-h-0 flex-col gap-3">
+          {/* Screenshot */}
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Live View</span>
+              {listening && (
+                <span className="flex items-center gap-1.5 text-[10px] font-medium text-red-600">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-600" />
+                  </span>
+                  Mic active
+                </span>
+              )}
+            </div>
+            <div className="flex flex-1 items-center justify-center bg-slate-950 p-2">
+              {screenshot ? (
                 <img
                   src={screenshot}
                   alt="Remote screen"
                   className="max-h-full max-w-full rounded object-contain"
                 />
-              </div>
-            ) : (
-              <div className="flex h-full flex-col items-center justify-center gap-3 bg-slate-950 text-slate-300">
-                <ImageIcon className="h-12 w-12 opacity-30" />
-                <p className="text-sm">
-                  {connected
-                    ? "Screenshot will appear when the agent takes one"
-                    : "Connect to start voice control"}
-                </p>
-              </div>
-            )}
-          </Card>
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-slate-500">
+                  <ImageIcon className="h-8 w-8 opacity-30" />
+                  <p className="text-xs">
+                    {connected
+                      ? "Screenshot appears when the agent acts"
+                      : "Connect to start voice control"}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
 
-          <Card className="shrink-0 border-slate-200 bg-white/95 shadow-sm">
-            <CardContent className="flex items-center justify-center gap-4 py-4">
-              <button
-                onClick={listening ? stopMic : startMic}
-                disabled={!connected}
-                className={`relative flex h-16 w-16 items-center justify-center rounded-full transition-all focus:outline-none disabled:opacity-40 ${
-                  listening
-                    ? "bg-red-500 text-white shadow-lg shadow-red-500/30"
-                    : "bg-slate-200 text-slate-600 hover:bg-slate-900 hover:text-white"
-                }`}
-              >
-                {listening && (
-                  <span className="absolute inset-0 animate-ping rounded-full bg-red-400 opacity-25" />
-                )}
-                {listening ? (
-                  <MicOff className="relative z-10 h-7 w-7" />
-                ) : (
-                  <Mic className="relative z-10 h-7 w-7" />
-                )}
-              </button>
-              <p className="text-sm text-slate-600">
+          {/* Mic control */}
+          <div className="flex items-center justify-center gap-4 rounded-xl border border-slate-200 bg-white px-6 py-3 shadow-sm">
+            <button
+              onClick={listening ? stopMic : startMic}
+              disabled={!connected}
+              className={`relative flex h-12 w-12 items-center justify-center rounded-full transition-all focus:outline-none disabled:opacity-30 ${
+                listening
+                  ? "bg-red-500 text-white shadow-lg shadow-red-500/25"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white hover:shadow-lg"
+              }`}
+            >
+              {listening && (
+                <span className="absolute inset-0 animate-ping rounded-full bg-red-400 opacity-20" />
+              )}
+              {listening ? (
+                <MicOff className="relative z-10 h-5 w-5" />
+              ) : (
+                <Mic className="relative z-10 h-5 w-5" />
+              )}
+            </button>
+            <div>
+              <p className="text-sm font-medium text-slate-700">
                 {!connected
                   ? "Connect first"
                   : listening
                     ? "Listening… speak a command"
-                    : "Click to start"}
+                    : "Click to start speaking"}
               </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="flex min-h-0 flex-col overflow-hidden border-slate-200 bg-white/95 shadow-sm">
-          <CardHeader className="flex-row items-center justify-between py-3">
-            <CardTitle className="text-sm text-slate-900">Transcript</CardTitle>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-600 hover:bg-slate-100 hover:text-slate-900" onClick={clearLogs}>
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </CardHeader>
-          <Separator className="bg-slate-200" />
-          <div className="min-h-0 flex-1 overflow-y-auto px-4">
-            <div className="space-y-2 py-3">
-              {logs.length === 0 && (
-                <p className="text-center text-xs text-slate-500">
-                  Voice transcript will appear here
-                </p>
-              )}
-              {logs.map((log) => (
-                <VoiceLogItem key={log.id} log={log} />
-              ))}
-              <div ref={logEndRef} />
+              <p className="text-[11px] text-slate-400">
+                {!connected
+                  ? "Press Connect above to begin"
+                  : listening
+                    ? "The agent hears and responds in real time"
+                    : "Or type a message below"}
+              </p>
             </div>
           </div>
-        </Card>
+        </div>
+
+        {/* Right: tabbed execution panel */}
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          {/* Tabs */}
+          <div className="flex shrink-0 border-b border-slate-100">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`relative flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${
+                  activeTab === tab.key
+                    ? "text-slate-900"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                {tab.label}
+                {tab.count > 0 && (
+                  <span
+                    className={`rounded-full px-1.5 py-px text-[9px] font-bold ${
+                      activeTab === tab.key
+                        ? "bg-slate-900 text-white"
+                        : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+                {activeTab === tab.key && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-900" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {activeTab === "chat" && (
+              <div className="p-3">
+                {conversationLogs.length === 0 ? (
+                  <EmptyState icon={<MessageSquare className="h-6 w-6" />} text="Voice transcript appears here" />
+                ) : (
+                  <div className="space-y-2">
+                    {conversationLogs.map((log) => (
+                      <ConversationBubble key={log.id} log={log} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {activeTab === "reasoning" && (
+              <div className="p-3">
+                {thinkingLogs.length === 0 ? (
+                  <EmptyState icon={<Brain className="h-6 w-6" />} text="Reasoning will appear when the agent thinks" />
+                ) : (
+                  <div className="space-y-2">
+                    {thinkingLogs.map((log, i) => (
+                      <div key={log.id} className="rounded-lg bg-violet-50 p-3">
+                        <div className="mb-1 flex items-center gap-1.5">
+                          <Brain className="h-3 w-3 text-violet-500" />
+                          <span className="text-[10px] font-bold uppercase text-violet-500">
+                            Thought {i + 1}
+                          </span>
+                        </div>
+                        <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-slate-700">
+                          {log.message}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {activeTab === "actions" && (
+              <div className="p-3">
+                {toolLogs.length === 0 ? (
+                  <EmptyState icon={<Wrench className="h-6 w-6" />} text="Tool calls will appear here" />
+                ) : (
+                  <div className="space-y-1.5">
+                    {toolLogs.map((log, i) => (
+                      <div
+                        key={log.id}
+                        className={`flex items-start gap-2.5 rounded-lg p-3 ${
+                          log.type === "tool_result" ? "bg-emerald-50" : "bg-amber-50"
+                        }`}
+                      >
+                        <div
+                          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                            log.type === "tool_result"
+                              ? "bg-emerald-100 text-emerald-600"
+                              : "bg-amber-100 text-amber-600"
+                          }`}
+                        >
+                          {log.type === "tool_result" ? (
+                            <Check className="h-3 w-3" />
+                          ) : (
+                            i + 1
+                          )}
+                        </div>
+                        <span className="min-w-0 flex-1 whitespace-pre-wrap break-words font-mono text-[12px] leading-relaxed text-slate-700">
+                          {log.message}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {activeTab === "log" && (
+              <div className="p-3">
+                {logs.length === 0 ? (
+                  <EmptyState icon={<Zap className="h-6 w-6" />} text="Activity will appear here" />
+                ) : (
+                  <div className="space-y-1">
+                    {logs.map((log) => (
+                      <VoiceLogItem key={log.id} log={log} />
+                    ))}
+                    <div ref={logEndRef} />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          {logs.length > 0 && (
+            <div className="shrink-0 border-t border-slate-100 px-3 py-1.5">
+              <button
+                onClick={clearLogs}
+                className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-600"
+              >
+                <Trash2 className="h-3 w-3" />
+                Clear all
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      <Card className="shrink-0 border-slate-200 bg-white/95 shadow-sm">
-        <CardContent className="py-3">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleTextSend();
-            }}
-            className="flex items-center gap-2"
+      {/* ── Text input bar ── */}
+      <div className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleTextSend();
+          }}
+          className="flex items-center gap-3"
+        >
+          <Input
+            placeholder={connected ? "Or type a command…" : "Connect first…"}
+            className="border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white"
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            disabled={!connected}
+          />
+          <Button
+            type="submit"
+            size="sm"
+            className="h-9 gap-1.5 bg-slate-900 px-4 text-white hover:bg-slate-800"
+            disabled={!connected || !textInput.trim()}
           >
-            <Input
-              placeholder={connected ? "Or type a command…" : "Connect first…"}
-              className="border-slate-300 bg-white text-slate-900 placeholder:text-slate-400"
-              value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
-              disabled={!connected}
-            />
-            <Button type="submit" className="bg-slate-900 text-white hover:bg-slate-800" disabled={!connected || !textInput.trim()}>
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+            <Send className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Send</span>
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }
 
-function VoiceLogItem({ log }: { log: LogEntry }) {
-  if (log.type === "user_voice") {
-    return (
-      <div className="flex items-start gap-2 text-xs">
-        <Badge variant="outline" className="mt-0.5 shrink-0 text-[10px]">
-          You
-        </Badge>
-        <span className="min-w-0 flex-1 whitespace-pre-wrap break-words leading-relaxed text-slate-700">
-          {log.message}
-        </span>
-      </div>
-    );
-  }
+/* ── Empty state ── */
+function EmptyState({ icon, text }: { icon: React.ReactNode; text: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 text-slate-300">
+      {icon}
+      <p className="mt-2 text-xs text-slate-400">{text}</p>
+    </div>
+  );
+}
 
-  if (log.type === "agent_voice") {
-    return (
-      <div className="flex items-start gap-2 text-xs">
-        <Badge className="mt-0.5 shrink-0 text-[10px]">Agent</Badge>
-        <span className="min-w-0 flex-1 whitespace-pre-wrap break-words leading-relaxed text-slate-700">
-          {log.message}
-        </span>
-      </div>
-    );
-  }
-
-  if (log.type === "thinking") {
-    return (
-      <div className="flex items-start gap-2 rounded-md bg-slate-100 p-2 text-xs">
-        <Brain className="mt-0.5 h-3.5 w-3.5 shrink-0 text-violet-500" />
-        <span className="min-w-0 flex-1 whitespace-pre-wrap break-words leading-relaxed text-slate-600">
-          {log.message}
-        </span>
-      </div>
-    );
-  }
-
-  if (log.type === "tool") {
-    return (
-      <div className="flex items-start gap-2 text-xs">
-        <Wrench className="mt-0.5 h-3 w-3 shrink-0 text-blue-500" />
-        <span className="min-w-0 flex-1 whitespace-pre-wrap break-words font-mono leading-relaxed text-slate-600">
-          {log.message}
-        </span>
-      </div>
-    );
-  }
-
-  if (log.type === "tool_result") {
-    return (
-      <div className="flex items-start gap-2 text-xs">
-        <Check className="mt-0.5 h-3 w-3 shrink-0 text-green-500" />
-        <span className="min-w-0 flex-1 whitespace-pre-wrap break-words font-mono leading-relaxed text-slate-600">
-          {log.message}
-        </span>
-      </div>
-    );
-  }
-
-  const variant =
-    log.type === "error" || log.type === "warning"
-      ? "destructive"
-      : log.type === "status"
-        ? "secondary"
-        : "secondary";
+/* ── Conversation Bubble ── */
+function ConversationBubble({ log }: { log: LogEntry }) {
+  const isUser = log.type === "user_voice";
 
   return (
-    <div className="flex items-start gap-2 text-xs">
-      <Badge variant={variant} className="mt-0.5 shrink-0 text-[10px]">
-        {log.type}
-      </Badge>
+    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+      <div
+        className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-[12px] leading-relaxed ${
+          isUser
+            ? "rounded-br-md bg-slate-900 text-white"
+            : "rounded-bl-md bg-blue-50 text-slate-800"
+        }`}
+      >
+        <p className={`mb-0.5 text-[10px] font-bold ${isUser ? "text-slate-400" : "text-blue-500"}`}>
+          {isUser ? "You" : "Agent"}
+        </p>
+        <span className="whitespace-pre-wrap break-words">{log.message}</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Voice Log Item ── */
+function VoiceLogItem({ log }: { log: LogEntry }) {
+  const styles: Record<string, { icon: React.ReactNode; bg: string }> = {
+    user_voice: { icon: <Mic className="h-3 w-3 text-slate-500" />, bg: "" },
+    agent_voice: { icon: <Zap className="h-3 w-3 text-blue-500" />, bg: "bg-blue-50/50" },
+    agent_response: { icon: <Zap className="h-3 w-3 text-blue-500" />, bg: "bg-blue-50/50" },
+    thinking: { icon: <Brain className="h-3 w-3 text-violet-500" />, bg: "bg-violet-50" },
+    tool: { icon: <Wrench className="h-3 w-3 text-amber-500" />, bg: "bg-amber-50" },
+    tool_result: { icon: <Check className="h-3 w-3 text-emerald-500" />, bg: "bg-emerald-50" },
+    error: { icon: <Zap className="h-3 w-3 text-rose-500" />, bg: "bg-rose-50" },
+    warning: { icon: <Zap className="h-3 w-3 text-amber-500" />, bg: "bg-amber-50" },
+    status: { icon: <Zap className="h-3 w-3 text-slate-400" />, bg: "" },
+  };
+
+  const style = styles[log.type] ?? styles.status;
+
+  return (
+    <div className={`flex items-start gap-2 rounded-md px-2.5 py-1.5 text-[11px] ${style.bg}`}>
+      <span className="mt-0.5 shrink-0">{style.icon}</span>
       <span className="min-w-0 flex-1 whitespace-pre-wrap break-words leading-relaxed text-slate-700">
         {log.message}
       </span>
