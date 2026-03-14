@@ -10,6 +10,7 @@ agent loop) for improved accuracy.
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import logging
@@ -20,6 +21,8 @@ from google.genai import types
 from server.connections.manager import connection_manager
 from server.navigator_agent.action_schema import format_ui_state_for_llm
 from server.navigator_agent.perception import build_ui_state
+from server.navigator_agent.tools import drain_recorded_actions
+from server.storage.gcs import upload_screenshot
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +34,11 @@ _live_queues: dict = {}
 # Maps device_id → WebSocket so tools can send data (like screenshots)
 # directly to the voice client.
 _live_websockets: dict = {}
+
+# ── Session logger registry for voice sessions ───────────────────
+_live_session_loggers: dict = {}   # device_id → SessionLogger
+_live_iteration_counters: dict = {}  # device_id → int
+_live_transcriptions: dict = {}    # device_id → list[{role, text}]
 
 
 def register_live_queue(device_id: str, queue) -> None:
@@ -51,6 +59,28 @@ def register_live_websocket(device_id: str, ws) -> None:
 def unregister_live_websocket(device_id: str) -> None:
     """Remove the voice WebSocket registration for a device."""
     _live_websockets.pop(device_id, None)
+
+
+# ── Session logger helpers ───────────────────────────────────
+
+def register_live_session_logger(device_id: str, sess_logger) -> None:
+    """Register a SessionLogger for a voice session."""
+    _live_session_loggers[device_id] = sess_logger
+    _live_iteration_counters[device_id] = 0
+    _live_transcriptions[device_id] = []
+
+
+def unregister_live_session_logger(device_id: str) -> None:
+    """Remove the SessionLogger registration for a device."""
+    _live_session_loggers.pop(device_id, None)
+    _live_iteration_counters.pop(device_id, None)
+    _live_transcriptions.pop(device_id, None)
+
+
+def record_live_transcription(device_id: str, role: str, text: str) -> None:
+    """Buffer a transcription line for the next iteration record."""
+    if device_id in _live_transcriptions:
+        _live_transcriptions[device_id].append({"role": role, "text": text})
 
 
 async def take_screenshot(tool_context: ToolContext) -> dict:
@@ -141,6 +171,42 @@ async def take_screenshot(tool_context: ToolContext) -> dict:
         except Exception as e:
             logger.warning("Failed to send screenshot to voice client: %s", e)
 
+    # ── Record iteration to voice session logger (if active) ──────
+    sess_logger = _live_session_loggers.get(device_id)
+    if sess_logger:
+        iteration = _live_iteration_counters.get(device_id, 0)
+
+        # Collect buffered transcriptions as reasoning text
+        pending_trans = _live_transcriptions.get(device_id, [])
+        reasoning = "\n".join(
+            f"[{t['role']}]: {t['text']}" for t in pending_trans
+        ) if pending_trans else ""
+
+        # Collect actions recorded since last screenshot
+        actions = drain_recorded_actions(device_id)
+
+        # Upload screenshot to GCS (runs in a thread to avoid blocking)
+        screenshot_url = None
+        try:
+            screenshot_url = await asyncio.to_thread(
+                upload_screenshot, sess_logger.session_id, iteration, screenshot_b64,
+            )
+        except Exception as e:
+            logger.warning("GCS upload failed for voice session: %s", e)
+
+        sess_logger.record_iteration(
+            iteration,
+            screenshot_url=screenshot_url,
+            screenshot_b64=screenshot_b64,
+            agent_reasoning=reasoning,
+            actions=actions,
+            element_count=ui_state.element_count,
+        )
+        _live_iteration_counters[device_id] = iteration + 1
+        # Clear buffered transcriptions
+        if device_id in _live_transcriptions:
+            _live_transcriptions[device_id] = []
+
     return {
         "status": "success",
         "screen_size": f"{sw}x{sh}",
@@ -180,6 +246,9 @@ __all__ = [
     "unregister_live_queue",
     "register_live_websocket",
     "unregister_live_websocket",
+    "register_live_session_logger",
+    "unregister_live_session_logger",
+    "record_live_transcription",
     "click_element",
     "click_element_area",
     "double_click_element",

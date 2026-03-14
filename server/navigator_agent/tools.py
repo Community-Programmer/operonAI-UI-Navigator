@@ -10,6 +10,28 @@ from server.connections.manager import connection_manager
 
 logger = logging.getLogger(__name__)
 
+# ── Optional per-device action recorders (used by voice sessions) ──
+_action_recorders: dict[str, list] = {}
+
+
+def register_action_recorder(device_id: str) -> list:
+    """Start recording actions for a device (voice session logging)."""
+    _action_recorders[device_id] = []
+    return _action_recorders[device_id]
+
+
+def unregister_action_recorder(device_id: str) -> None:
+    """Stop recording actions for a device."""
+    _action_recorders.pop(device_id, None)
+
+
+def drain_recorded_actions(device_id: str) -> list:
+    """Return and clear all recorded actions for a device."""
+    actions = _action_recorders.get(device_id, [])
+    if device_id in _action_recorders:
+        _action_recorders[device_id] = []
+    return actions
+
 
 def _clamp_coords(x: int, y: int, tool_context: ToolContext) -> tuple[int, int]:
     """Clamp coordinates to screen bounds to prevent off-screen clicks."""
@@ -101,6 +123,15 @@ async def _send_command(tool_context: ToolContext, action: str, parameters: dict
             "result_status": status,
         },
     })
+
+    # Record action for voice session logging (if active)
+    if device_id in _action_recorders:
+        _action_recorders[device_id].append({
+            "action": action,
+            "parameters": parameters or {},
+            "reason": msg,
+            "status": status,
+        })
 
     return result
 

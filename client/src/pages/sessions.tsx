@@ -41,6 +41,20 @@ const STATUS_MAP: Record<
     textColor: "text-blue-700",
     label: "Running",
   },
+  completed: {
+    icon: CheckCircle2,
+    iconColor: "text-emerald-500",
+    bgColor: "bg-emerald-50",
+    textColor: "text-emerald-700",
+    label: "Completed",
+  },
+  error: {
+    icon: XCircle,
+    iconColor: "text-rose-500",
+    bgColor: "bg-rose-50",
+    textColor: "text-rose-700",
+    label: "Error",
+  },
   interrupted: {
     icon: StopCircle,
     iconColor: "text-amber-500",
@@ -115,8 +129,8 @@ export function SessionsPage() {
       s.device_name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const completedCount = sessions.filter((s) => s.status === "complete").length;
-  const failedCount = sessions.filter((s) => s.status === "failed").length;
+  const completedCount = sessions.filter((s) => s.status === "complete" || s.status === "completed").length;
+  const failedCount = sessions.filter((s) => s.status === "failed" || s.status === "error").length;
   const runningCount = sessions.filter((s) => s.status === "running").length;
 
   return (
@@ -214,9 +228,16 @@ export function SessionsPage() {
               >
                 {/* Goal */}
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-900">
-                    {session.goal}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="truncate text-sm font-medium text-slate-900">
+                      {session.goal}
+                    </p>
+                    {session.mode === "voice" && (
+                      <span className="shrink-0 rounded bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-violet-600">
+                        Voice
+                      </span>
+                    )}
+                  </div>
                   <p className="mt-0.5 text-[11px] text-slate-400">
                     {session.total_iterations} iteration{session.total_iterations !== 1 ? "s" : ""}
                   </p>

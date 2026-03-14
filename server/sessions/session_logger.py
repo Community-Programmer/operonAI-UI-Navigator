@@ -39,6 +39,7 @@ class SessionLogger:
         device_id: str,
         device_name: str,
         goal: str,
+        mode: str = "navigate",
     ) -> None:
         self.session_id = session_id
         self.user_id = user_id
@@ -63,7 +64,7 @@ class SessionLogger:
             "iterations": [],
             "final_verification": None,
             "total_iterations": 0,
-            "mode": "navigate",
+            "mode": mode,
         })
         logger.info("Session %s created for goal: %s", session_id, goal[:80])
 

@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import type { LogEntry } from "@/types";
 
-type VoiceTab = "chat" | "reasoning" | "actions" | "log";
+type VoiceTab = "chat" | "actions" | "log";
 
 export function VoicePage() {
   const { deviceId } = useParams<{ deviceId: string }>();
@@ -61,12 +61,10 @@ export function VoicePage() {
   const conversationLogs = logs.filter(
     (l) => l.type === "user_voice" || l.type === "agent_voice" || l.type === "agent_response",
   );
-  const thinkingLogs = logs.filter((l) => l.type === "thinking");
   const toolLogs = logs.filter((l) => l.type === "tool" || l.type === "tool_result");
 
   const tabs: { key: VoiceTab; label: string; count: number }[] = [
     { key: "chat", label: "Chat", count: conversationLogs.length },
-    { key: "reasoning", label: "Reasoning", count: thinkingLogs.length },
     { key: "actions", label: "Actions", count: toolLogs.length },
     { key: "log", label: "Log", count: logs.length },
   ];
@@ -262,29 +260,6 @@ export function VoicePage() {
                   <div className="space-y-2">
                     {conversationLogs.map((log) => (
                       <ConversationBubble key={log.id} log={log} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {activeTab === "reasoning" && (
-              <div className="p-3">
-                {thinkingLogs.length === 0 ? (
-                  <EmptyState icon={<Brain className="h-6 w-6" />} text="Reasoning will appear when the agent thinks" />
-                ) : (
-                  <div className="space-y-2">
-                    {thinkingLogs.map((log, i) => (
-                      <div key={log.id} className="rounded-lg bg-violet-50 p-3">
-                        <div className="mb-1 flex items-center gap-1.5">
-                          <Brain className="h-3 w-3 text-violet-500" />
-                          <span className="text-[10px] font-bold uppercase text-violet-500">
-                            Thought {i + 1}
-                          </span>
-                        </div>
-                        <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-slate-700">
-                          {log.message}
-                        </p>
-                      </div>
                     ))}
                   </div>
                 )}

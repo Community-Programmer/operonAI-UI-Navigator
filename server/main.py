@@ -46,9 +46,20 @@ from server.navigator_agent.live_tools import (
     unregister_live_queue,
     register_live_websocket,
     unregister_live_websocket,
+    register_live_session_logger,
+    unregister_live_session_logger,
+    record_live_transcription,
+    _live_transcriptions,
+    _live_iteration_counters,
+)
+from server.navigator_agent.tools import (
+    register_action_recorder,
+    unregister_action_recorder,
+    drain_recorded_actions,
 )
 from server.segmentation.service import segment_screenshot_payload
 from server.sessions.session_logger import (
+    SessionLogger,
     list_sessions,
     get_session_detail,
     get_iteration_screenshot,
@@ -531,6 +542,17 @@ async def ws_voice(
         },
     )
 
+    # ── Session logger for MongoDB persistence ─────────────────────
+    device_name = info.get("device_name", "Unnamed Device")
+    sess_logger = SessionLogger(
+        session_id=session_id,
+        user_id=user_id,
+        device_id=device_id,
+        device_name=device_name,
+        goal="Voice Control Session",
+        mode="voice",
+    )
+
     # ── RunConfig for bidi-streaming with audio I/O ────────────────
     # Voice selection — natural-sounding voice for native audio model
     speech_config = genai_types.SpeechConfig(
@@ -558,79 +580,150 @@ async def ws_voice(
     live_request_queue = LiveRequestQueue()
     register_live_queue(device_id, live_request_queue)
     register_live_websocket(device_id, websocket)
+    register_live_session_logger(device_id, sess_logger)
+    register_action_recorder(device_id)
 
     # ── Upstream: Client → LiveRequestQueue ────────────────────────
 
     async def upstream_task() -> None:
         """Receive audio/text from WebSocket and forward to LiveRequestQueue."""
-        while True:
+        try:
+          while True:
             message = await websocket.receive()
 
-            if "bytes" in message:
-                audio_blob = genai_types.Blob(
-                    mime_type="audio/pcm;rate=16000",
-                    data=message["bytes"],
-                )
-                live_request_queue.send_realtime(audio_blob)
-
-            elif "text" in message:
-                text_data = message["text"]
-                json_msg = json.loads(text_data)
-                msg_type = json_msg.get("type", "")
-
-                if msg_type == "text":
-                    content = genai_types.Content(
-                        parts=[genai_types.Part(text=json_msg.get("text", ""))]
+            try:
+                if "bytes" in message:
+                    raw = message["bytes"]
+                    if not raw:
+                        continue  # skip empty audio frames
+                    audio_blob = genai_types.Blob(
+                        mime_type="audio/pcm;rate=16000",
+                        data=raw,
                     )
-                    live_request_queue.send_content(content)
-                elif msg_type == "image":
-                    image_data = base64.b64decode(json_msg["data"])
-                    mime_type = json_msg.get("mimeType", "image/jpeg")
-                    image_blob = genai_types.Blob(
-                        mime_type=mime_type, data=image_data
-                    )
-                    live_request_queue.send_realtime(image_blob)
+                    live_request_queue.send_realtime(audio_blob)
+
+                elif "text" in message:
+                    text_data = message["text"]
+                    json_msg = json.loads(text_data)
+                    msg_type = json_msg.get("type", "")
+
+                    if msg_type == "text":
+                        user_text = json_msg.get("text", "")
+                        if user_text:
+                            content = genai_types.Content(
+                                parts=[genai_types.Part(text=user_text)]
+                            )
+                            live_request_queue.send_content(content)
+                    elif msg_type == "image":
+                        image_data = base64.b64decode(json_msg["data"])
+                        mime_type = json_msg.get("mimeType", "image/jpeg")
+                        image_blob = genai_types.Blob(
+                            mime_type=mime_type, data=image_data
+                        )
+                        live_request_queue.send_realtime(image_blob)
+            except (json.JSONDecodeError, KeyError, ValueError) as e:
+                logger.warning("Skipping malformed upstream message: %s", e)
+        except (RuntimeError, WebSocketDisconnect):
+          # Client disconnected — normal shutdown path
+          pass
 
     # ── Downstream: run_live() → Client ────────────────────────────
 
     async def downstream_task() -> None:
         """Receive events from run_live() and forward JSON to WebSocket."""
-        async for event in live_runner.run_live(
-            user_id=user_id,
-            session_id=session_id,
-            live_request_queue=live_request_queue,
-            run_config=run_config,
-        ):
-            # Forward the full ADK event as JSON (including base64 audio)
-            event_json = event.model_dump_json(
-                exclude_none=True, by_alias=True
-            )
-            await websocket.send_text(event_json)
+        # Accumulate transcription fragments — only broadcast complete turns
+        agent_transcript_buf = ""   # partial within a segment (overwritten by API)
+        user_transcript_buf = ""
+        agent_full_turn = ""         # accumulated across finished segments
+        user_full_turn = ""
 
-            # Broadcast transcriptions to dashboards for live monitoring
-            if event.output_transcription:
-                out_text = getattr(event.output_transcription, "text", None)
-                if out_text:
-                    await connection_manager.broadcast_to_dashboards(user_id, {
-                        "type": "log",
-                        "data": {
-                            "action": "agent_voice",
-                            "message": out_text,
-                            "author": "voice_navigator",
-                        },
-                    })
+        try:
+            async for event in live_runner.run_live(
+                user_id=user_id,
+                session_id=session_id,
+                live_request_queue=live_request_queue,
+                run_config=run_config,
+            ):
+                # Forward the full ADK event as JSON (including base64 audio)
+                event_json = event.model_dump_json(
+                    exclude_none=True, by_alias=True
+                )
+                await websocket.send_text(event_json)
 
-            if event.input_transcription:
-                in_text = getattr(event.input_transcription, "text", None)
-                if in_text:
-                    await connection_manager.broadcast_to_dashboards(user_id, {
-                        "type": "log",
-                        "data": {
-                            "action": "user_voice",
-                            "message": in_text,
-                            "author": "user",
-                        },
-                    })
+                # Accumulate transcriptions — only broadcast and record when
+                # we get the full sentence (finished=true or turn_complete)
+                if event.output_transcription:
+                    out_text = getattr(event.output_transcription, "text", None)
+                    finished = getattr(event.output_transcription, "finished", False)
+                    if out_text:
+                        agent_transcript_buf = out_text
+                    if finished and agent_transcript_buf:
+                        # Segment finished — accumulate into full turn buffer
+                        agent_full_turn = (agent_full_turn + " " + agent_transcript_buf).strip()
+                        agent_transcript_buf = ""
+
+                if event.input_transcription:
+                    in_text = getattr(event.input_transcription, "text", None)
+                    finished = getattr(event.input_transcription, "finished", False)
+                    if in_text:
+                        user_transcript_buf = in_text
+                    if finished and user_transcript_buf:
+                        # Segment finished — accumulate into full turn buffer
+                        user_full_turn = (user_full_turn + " " + user_transcript_buf).strip()
+                        user_transcript_buf = ""
+
+                # On turn complete, flush remaining partials into full turn
+                # then record + broadcast the complete message
+                turn_complete = getattr(event, "turn_complete", False)
+                if turn_complete:
+                    if agent_transcript_buf:
+                        agent_full_turn = (agent_full_turn + " " + agent_transcript_buf).strip()
+                        agent_transcript_buf = ""
+                    if user_transcript_buf:
+                        user_full_turn = (user_full_turn + " " + user_transcript_buf).strip()
+                        user_transcript_buf = ""
+
+                    if agent_full_turn:
+                        record_live_transcription(device_id, "agent", agent_full_turn)
+                        await connection_manager.broadcast_to_dashboards(user_id, {
+                            "type": "log",
+                            "data": {
+                                "action": "agent_voice",
+                                "message": agent_full_turn,
+                                "author": "voice_navigator",
+                            },
+                        })
+                        agent_full_turn = ""
+                    if user_full_turn:
+                        record_live_transcription(device_id, "user", user_full_turn)
+                        await connection_manager.broadcast_to_dashboards(user_id, {
+                            "type": "log",
+                            "data": {
+                                "action": "user_voice",
+                                "message": user_full_turn,
+                                "author": "user",
+                            },
+                        })
+                        user_full_turn = ""
+        except Exception as e:
+            # Catch Gemini API errors (like 1007 invalid frame) gracefully
+            # so the session is finalized properly instead of crashing
+            err_str = str(e)
+            if "1007" in err_str or "invalid" in err_str.lower():
+                logger.warning(
+                    "Gemini Live API connection error (device %s): %s",
+                    device_id, e,
+                )
+                # Notify the client so it can show a message / reconnect
+                try:
+                    await websocket.send_text(json.dumps({
+                        "type": "error",
+                        "message": "Voice connection interrupted by API. Please reconnect.",
+                    }))
+                except Exception:
+                    pass
+            else:
+                raise  # re-raise unexpected errors
 
     # ── Run both tasks concurrently with proper cancellation ───────
     upstream = None
@@ -663,7 +756,10 @@ async def ws_voice(
 
         # Re-raise any exceptions from completed tasks
         for task in done:
-            if task.exception() and not isinstance(task.exception(), (asyncio.CancelledError, WebSocketDisconnect)):
+            if not task.cancelled() and task.exception() and not isinstance(
+                task.exception(),
+                (asyncio.CancelledError, WebSocketDisconnect, RuntimeError),
+            ):
                 raise task.exception()
 
     except WebSocketDisconnect:
@@ -673,6 +769,18 @@ async def ws_voice(
     except Exception as e:
         logger.error("Voice session error: %s", e, exc_info=True)
     finally:
+        # Determine final status based on how the session ended
+        final_status = "completed"
+        for task in [upstream, downstream]:
+            if task and task.done() and not task.cancelled():
+                try:
+                    exc = task.exception()
+                except asyncio.CancelledError:
+                    continue
+                if exc and not isinstance(exc, (asyncio.CancelledError, WebSocketDisconnect, RuntimeError)):
+                    final_status = "error"
+                    break
+
         # Clean up tasks if they're still running
         for task in [upstream, downstream]:
             if task and not task.done():
@@ -682,9 +790,36 @@ async def ws_voice(
                 except (asyncio.CancelledError, Exception):
                     pass
 
+        # Flush any remaining buffered transcriptions as a final iteration
+        # so chats are not lost when no screenshot was taken after them
+        try:
+            pending = _live_transcriptions.get(device_id, [])
+            if pending:
+                reasoning = "\n".join(
+                    f"[{t['role']}]: {t['text']}" for t in pending
+                )
+                actions = drain_recorded_actions(device_id)
+                iteration = _live_iteration_counters.get(device_id, 0)
+                sess_logger.record_iteration(
+                    iteration,
+                    agent_reasoning=reasoning,
+                    actions=actions,
+                    element_count=0,
+                )
+        except Exception as e:
+            logger.warning("Failed to flush final transcriptions: %s", e)
+
+        # Finalize the session log in MongoDB
+        try:
+            sess_logger.finalize(final_status)
+        except Exception as e:
+            logger.error("Failed to finalize session %s: %s", session_id, e)
+
         live_request_queue.close()
         unregister_live_queue(device_id)
         unregister_live_websocket(device_id)
+        unregister_live_session_logger(device_id)
+        unregister_action_recorder(device_id)
 
         await connection_manager.broadcast_to_dashboards(user_id, {
             "type": "status",

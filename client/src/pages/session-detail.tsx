@@ -13,6 +13,7 @@ import {
   Clock,
   Crosshair,
   Loader2,
+  Mic,
   MousePointerClick,
   XCircle,
   Zap,
@@ -20,6 +21,7 @@ import {
   AlertTriangle,
   StopCircle,
   ImageOff,
+  MessageSquare,
 } from "lucide-react";
 
 /* ── Status config ── */
@@ -33,6 +35,8 @@ const STATUS_CFG: Record<
   interrupted: { icon: StopCircle, iconColor: "text-amber-500", bgColor: "bg-amber-50", textColor: "text-amber-700", label: "Interrupted" },
   max_iterations: { icon: AlertTriangle, iconColor: "text-orange-500", bgColor: "bg-orange-50", textColor: "text-orange-700", label: "Max Iterations" },
   needs_human: { icon: AlertTriangle, iconColor: "text-purple-500", bgColor: "bg-purple-50", textColor: "text-purple-700", label: "Needs Human" },
+  completed: { icon: CheckCircle2, iconColor: "text-emerald-500", bgColor: "bg-emerald-50", textColor: "text-emerald-700", label: "Completed" },
+  error: { icon: XCircle, iconColor: "text-rose-500", bgColor: "bg-rose-50", textColor: "text-rose-700", label: "Error" },
 };
 
 function formatDuration(seconds: number | null): string {
@@ -299,6 +303,286 @@ function SectionHeader({ icon, label }: { icon: React.ReactNode; label: string }
   );
 }
 
+/* ── Voice Session Iteration Card ── */
+function VoiceIterationCard({
+  iter,
+  index,
+  sessionId,
+  token,
+}: {
+  iter: SessionIteration;
+  index: number;
+  sessionId: string;
+  token: string;
+}) {
+  const [expanded, setExpanded] = useState(index === 0);
+  const fallbackUrl = screenshotUrl(sessionId, iter.iteration, token);
+  const imgSrc = iter.screenshot_url || fallbackUrl;
+
+  // Parse conversation from agent_reasoning (format: "[role]: text")
+  const transcriptLines = (iter.agent_reasoning || "")
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => {
+      const match = line.match(/^\[(\w+)\]:\s*(.+)$/);
+      return match ? { role: match[1], text: match[2] } : { role: "system", text: line };
+    });
+
+  return (
+    <div className="relative ml-8">
+      {/* Timeline dot */}
+      <div className="absolute -left-8 top-4 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-violet-500 text-[9px] font-bold text-white shadow-sm">
+        {iter.iteration + 1}
+      </div>
+
+      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50/60"
+        >
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-slate-800">
+                Snapshot {iter.iteration + 1}
+              </span>
+              {iter.actions.length > 0 && (
+                <span className="rounded bg-amber-50 px-1.5 py-px text-[10px] font-medium text-amber-600">
+                  {iter.actions.length} action{iter.actions.length !== 1 ? "s" : ""}
+                </span>
+              )}
+              {transcriptLines.length > 0 && (
+                <span className="rounded bg-violet-50 px-1.5 py-px text-[10px] font-medium text-violet-600">
+                  {transcriptLines.length} message{transcriptLines.length !== 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+            {transcriptLines.length > 0 && (
+              <p className="mt-0.5 truncate text-[12px] text-slate-400">
+                {transcriptLines[transcriptLines.length - 1].text.slice(0, 100)}
+              </p>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-2 text-slate-400">
+            {iter.element_count > 0 && (
+              <span className="text-[10px] text-slate-400">{iter.element_count} elements</span>
+            )}
+            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </div>
+        </button>
+
+        {expanded && (
+          <div className="border-t border-slate-100 px-4 pb-4 pt-3">
+            <div className="grid gap-4 lg:grid-cols-2">
+              {/* Screenshot */}
+              <div>
+                <SectionHeader icon={<Camera className="h-3 w-3" />} label="Screenshot" />
+                <ScreenshotImage src={imgSrc} fallbackSrc={fallbackUrl} alt={`Snapshot ${iter.iteration + 1}`} />
+              </div>
+
+              {/* Conversation + Actions */}
+              <div className="space-y-4">
+                {/* Conversation transcript */}
+                {transcriptLines.length > 0 && (
+                  <div>
+                    <SectionHeader icon={<MessageSquare className="h-3 w-3" />} label="Conversation" />
+                    <div className="space-y-2">
+                      {transcriptLines.map((line, i) => (
+                        <div
+                          key={i}
+                          className={`flex ${line.role === "user" ? "justify-end" : "justify-start"}`}
+                        >
+                          <div
+                            className={`max-w-[90%] rounded-2xl px-3 py-2 text-[12px] leading-relaxed ${
+                              line.role === "user"
+                                ? "rounded-br-md bg-slate-900 text-white"
+                                : "rounded-bl-md bg-violet-50 text-slate-800"
+                            }`}
+                          >
+                            <p className={`mb-0.5 text-[10px] font-bold ${line.role === "user" ? "text-slate-400" : "text-violet-500"}`}>
+                              {line.role === "user" ? "You" : "Agent"}
+                            </p>
+                            {line.text}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                {iter.actions.length > 0 && (
+                  <div>
+                    <SectionHeader icon={<MousePointerClick className="h-3 w-3" />} label={`Actions (${iter.actions.length})`} />
+                    <div className="space-y-1.5">
+                      {iter.actions.map((action, i) => (
+                        <div key={i} className="flex items-start gap-2 rounded-lg border border-slate-100 bg-slate-50 p-2.5">
+                          <Zap className={`mt-0.5 h-3 w-3 shrink-0 ${action.status === "success" ? "text-emerald-500" : "text-rose-500"}`} />
+                          <div className="min-w-0 text-[12px]">
+                            <span className="font-mono font-semibold text-slate-800">{action.action}</span>
+                            {action.reason && <p className="mt-0.5 text-slate-500">{action.reason}</p>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Voice Session Detail Layout ── */
+function VoiceSessionDetailView({
+  session,
+  sessionId,
+  token,
+  navigate,
+}: {
+  session: SessionDetail;
+  sessionId: string;
+  token: string;
+  navigate: (path: string) => void;
+}) {
+  const cfg = STATUS_CFG[session.status] ?? STATUS_CFG.running;
+  const StatusIcon = cfg.icon;
+
+  // Extract all transcription lines from iterations for the full conversation
+  const allTranscript = session.iterations.flatMap((iter) =>
+    (iter.agent_reasoning || "")
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => {
+        const match = line.match(/^\[(\w+)\]:\s*(.+)$/);
+        return match ? { role: match[1], text: match[2] } : null;
+      })
+      .filter(Boolean) as { role: string; text: string }[]
+  );
+
+  const totalActions = session.iterations.reduce((sum, it) => sum + it.actions.length, 0);
+
+  return (
+    <div className="mx-auto max-w-5xl space-y-5">
+      {/* Back + Header */}
+      <div>
+        <button
+          onClick={() => navigate("/app/sessions")}
+          className="mb-3 flex items-center gap-1 text-sm text-slate-400 transition-colors hover:text-slate-700"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Sessions
+        </button>
+
+        <div className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <Mic className="h-5 w-5 text-violet-500" />
+              <h1 className="text-lg font-bold text-slate-900">{session.goal}</h1>
+              <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-violet-600">
+                Voice
+              </span>
+            </div>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+              <span className="font-medium text-slate-700">{session.device_name}</span>
+              <span className="text-slate-300">|</span>
+              <span className="font-mono text-[11px] text-slate-400">{session.device_id}</span>
+              <span className="text-slate-300">|</span>
+              <span>{new Date(session.started_at).toLocaleString()}</span>
+            </div>
+          </div>
+          <span className={`flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold ${cfg.bgColor} ${cfg.textColor} border-current/20`}>
+            <StatusIcon className={`h-3.5 w-3.5 ${cfg.iconColor} ${session.status === "running" ? "animate-spin" : ""}`} />
+            {cfg.label}
+          </span>
+        </div>
+      </div>
+
+      {/* Stats — voice-appropriate */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { label: "Duration", value: formatDuration(session.duration_seconds), icon: <Clock className="h-3.5 w-3.5 text-slate-400" /> },
+          { label: "Snapshots", value: session.total_iterations.toString(), icon: <Camera className="h-3.5 w-3.5 text-slate-400" /> },
+          { label: "Messages", value: allTranscript.length.toString(), icon: <MessageSquare className="h-3.5 w-3.5 text-slate-400" /> },
+          { label: "Actions", value: totalActions.toString(), icon: <Zap className="h-3.5 w-3.5 text-slate-400" /> },
+        ].map((stat) => (
+          <div key={stat.label} className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <div className="flex items-center gap-1.5">
+              {stat.icon}
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{stat.label}</span>
+            </div>
+            <p className="mt-1.5 text-xl font-bold tabular-nums text-slate-900">{stat.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Conversation Summary */}
+      {allTranscript.length > 0 && (
+        <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-3">
+            <MessageSquare className="h-4 w-4 text-violet-500" />
+            <h2 className="text-sm font-semibold text-slate-800">Conversation</h2>
+            <span className="ml-auto text-[11px] font-medium text-slate-400">
+              {allTranscript.length} messages
+            </span>
+          </div>
+          <div className="max-h-80 space-y-2 overflow-y-auto p-4">
+            {allTranscript.map((line, i) => (
+              <div key={i} className={`flex ${line.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-[12px] leading-relaxed ${
+                    line.role === "user"
+                      ? "rounded-br-md bg-slate-900 text-white"
+                      : "rounded-bl-md bg-violet-50 text-slate-800"
+                  }`}
+                >
+                  <p className={`mb-0.5 text-[10px] font-bold ${line.role === "user" ? "text-slate-400" : "text-violet-500"}`}>
+                    {line.role === "user" ? "You" : "Agent"}
+                  </p>
+                  {line.text}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Iteration Timeline */}
+      <div>
+        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-800">
+          <Camera className="h-4 w-4 text-slate-400" />
+          Activity Timeline
+          <span className="ml-1 rounded bg-slate-100 px-1.5 py-px text-[10px] font-bold text-slate-500">
+            {session.iterations.length}
+          </span>
+        </h2>
+
+        {session.iterations.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white py-12">
+            <Camera className="h-6 w-6 text-slate-300" />
+            <p className="mt-2 text-sm text-slate-400">No snapshots recorded</p>
+          </div>
+        ) : (
+          <div className="relative space-y-3">
+            <div className="absolute bottom-0 left-[0.55rem] top-0 w-px bg-slate-200" />
+            {session.iterations.map((iter, i) => (
+              <VoiceIterationCard
+                key={`${iter.iteration}-${i}`}
+                iter={iter}
+                index={i}
+                sessionId={sessionId}
+                token={token}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── Main page ── */
 export function SessionDetailPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -341,6 +625,18 @@ export function SessionDetailPage() {
     );
   }
 
+  // Voice sessions get a different layout — no plan/verification/progress
+  if (session.mode === "voice") {
+    return (
+      <VoiceSessionDetailView
+        session={session}
+        sessionId={sessionId!}
+        token={token!}
+        navigate={navigate}
+      />
+    );
+  }
+
   const cfg = STATUS_CFG[session.status] ?? STATUS_CFG.running;
   const StatusIcon = cfg.icon;
   const completedSteps =
@@ -367,7 +663,14 @@ export function SessionDetailPage() {
 
         <div className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-bold text-slate-900">{session.goal}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold text-slate-900">{session.goal}</h1>
+              {session.mode === "voice" && (
+                <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-violet-600">
+                  Voice
+                </span>
+              )}
+            </div>
             <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
               <span className="font-medium text-slate-700">{session.device_name}</span>
               <span className="text-slate-300">|</span>
