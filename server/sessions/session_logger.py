@@ -83,6 +83,7 @@ class SessionLogger:
         iteration: int,
         *,
         screenshot_url: str | None = None,
+        screenshot_b64: str | None = None,
         agent_reasoning: str = "",
         actions: list[dict[str, Any]] | None = None,
         verification: dict[str, Any] | None = None,
@@ -95,6 +96,7 @@ class SessionLogger:
             "iteration": iteration,
             "timestamp": ts,
             "screenshot_url": screenshot_url,
+            "screenshot_b64": screenshot_b64,
             "agent_reasoning": agent_reasoning,
             "actions": actions or [],
             "verification": verification,
@@ -181,13 +183,37 @@ def list_sessions(
 
 
 def get_session_detail(session_id: str, user_id: str) -> dict[str, Any] | None:
-    """Return full session detail including all iterations."""
+    """Return full session detail including all iterations.
+
+    Strips screenshot_b64 from iterations to keep the response small.
+    The base64 data is served separately via the screenshot endpoint.
+    """
     col = _get_collection()
     doc = col.find_one(
         {"session_id": session_id, "user_id": user_id},
         {"_id": 0},
     )
+    if doc and "iterations" in doc:
+        for it in doc["iterations"]:
+            it.pop("screenshot_b64", None)
     return doc
+
+
+def get_iteration_screenshot(
+    session_id: str, user_id: str, iteration: int,
+) -> str | None:
+    """Return the base64 screenshot for a specific iteration."""
+    col = _get_collection()
+    doc = col.find_one(
+        {"session_id": session_id, "user_id": user_id},
+        {"_id": 0, "iterations": 1},
+    )
+    if not doc:
+        return None
+    for it in doc.get("iterations", []):
+        if it.get("iteration") == iteration and it.get("screenshot_b64"):
+            return it["screenshot_b64"]
+    return None
 
 
 def count_sessions(user_id: str) -> int:

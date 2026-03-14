@@ -526,6 +526,7 @@ async def run_agent_loop(
                 sess_logger.record_iteration,
                 iteration,
                 screenshot_url=iter_screenshot_url,
+                screenshot_b64=ui_state.screenshot_b64 or None,
                 agent_reasoning=loop_iteration.agent_reasoning or agent_response_text.strip(),
                 actions=captured_tool_calls,
                 element_count=ui_state.element_count,
@@ -585,6 +586,7 @@ async def run_agent_loop(
                     iteration,
                     verification=ver_data,
                     screenshot_url=ver_url,
+                    screenshot_b64=verify_ui.screenshot_b64 or None,
                     agent_reasoning=f"[Verification] {verification.reasoning}",
                     element_count=verify_ui.element_count,
                 )

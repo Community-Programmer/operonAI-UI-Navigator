@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { getSessionDetail } from "@/lib/api";
+import { getSessionDetail, screenshotUrl } from "@/lib/api";
 import type { SessionDetail, SessionIteration } from "@/types";
 import {
   ArrowLeft,
@@ -39,10 +39,46 @@ function formatDuration(seconds: number | null): string {
   return `${m}m ${s}s`;
 }
 
-function IterationCard({ iter, index }: { iter: SessionIteration; index: number }) {
+/** Image with automatic fallback: tries primary src → fallback → placeholder */
+function ScreenshotImage({ src, fallbackSrc, alt }: { src: string; fallbackSrc: string; alt: string }) {
+  const [currentSrc, setCurrentSrc] = useState(src);
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <div className="flex h-40 items-center justify-center rounded-lg border border-dashed bg-slate-50">
+        <div className="text-center">
+          <ImageOff className="mx-auto h-6 w-6 text-slate-300" />
+          <p className="mt-1 text-xs text-slate-400">Failed to load screenshot</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <a href={currentSrc} target="_blank" rel="noopener noreferrer">
+      <img
+        src={currentSrc}
+        alt={alt}
+        className="w-full rounded-lg border shadow-sm transition-transform hover:scale-[1.02]"
+        onError={() => {
+          if (currentSrc !== fallbackSrc) {
+            setCurrentSrc(fallbackSrc);
+          } else {
+            setFailed(true);
+          }
+        }}
+      />
+    </a>
+  );
+}
+
+function IterationCard({ iter, index, sessionId, token }: { iter: SessionIteration; index: number; sessionId: string; token: string }) {
   const [expanded, setExpanded] = useState(index === 0);
-  const [imgError, setImgError] = useState(false);
-  const hasScreenshot = !!iter.screenshot_url;
+
+  // Build the image source: prefer GCS signed URL, fall back to server endpoint
+  const fallbackUrl = screenshotUrl(sessionId, iter.iteration, token);
+  const imgSrc = iter.screenshot_url || fallbackUrl;
   const hasVerification = !!iter.verification;
   const isVerificationOnly = iter.agent_reasoning?.startsWith("[Verification]");
 
@@ -94,7 +130,7 @@ function IterationCard({ iter, index }: { iter: SessionIteration; index: number 
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-400">
-          {hasScreenshot && <Camera className="h-3.5 w-3.5" />}
+          <Camera className="h-3.5 w-3.5" />
           {iter.element_count > 0 && (
             <span>{iter.element_count} elements</span>
           )}
@@ -112,25 +148,11 @@ function IterationCard({ iter, index }: { iter: SessionIteration; index: number 
                 <Camera className="h-3.5 w-3.5" />
                 Screenshot
               </h4>
-              {hasScreenshot && !imgError ? (
-                <a href={iter.screenshot_url!} target="_blank" rel="noopener noreferrer">
-                  <img
-                    src={iter.screenshot_url!}
-                    alt={`Iteration ${iter.iteration + 1}`}
-                    className="w-full rounded-lg border shadow-sm transition-transform hover:scale-[1.02]"
-                    onError={() => setImgError(true)}
-                  />
-                </a>
-              ) : (
-                <div className="flex h-40 items-center justify-center rounded-lg border border-dashed bg-slate-50">
-                  <div className="text-center">
-                    <ImageOff className="mx-auto h-6 w-6 text-slate-300" />
-                    <p className="mt-1 text-xs text-slate-400">
-                      {imgError ? "Failed to load" : "No screenshot"}
-                    </p>
-                  </div>
-                </div>
-              )}
+              <ScreenshotImage
+                src={imgSrc}
+                fallbackSrc={fallbackUrl}
+                alt={`Iteration ${iter.iteration + 1}`}
+              />
             </div>
 
             {/* Reasoning + Actions */}
@@ -398,7 +420,7 @@ export function SessionDetailPage() {
             <div className="absolute left-[1.9rem] top-0 bottom-0 w-px bg-slate-200" />
 
             {session.iterations.map((iter, i) => (
-              <IterationCard key={`${iter.iteration}-${i}`} iter={iter} index={i} />
+              <IterationCard key={`${iter.iteration}-${i}`} iter={iter} index={i} sessionId={sessionId!} token={token!} />
             ))}
           </div>
         )}

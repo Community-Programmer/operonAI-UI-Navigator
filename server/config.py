@@ -11,7 +11,7 @@ JWT_EXPIRE_HOURS = 720  # 30 days
 MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
 MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "ui_navigator")
 
-GEMINI_MODEL = "gemini-2.5-pro"
+GEMINI_MODEL = "gemini-2.5-flash"
 
 # Model for the live voice agent (must support native audio for bidi-streaming)
 LIVE_AGENT_MODEL = os.getenv(

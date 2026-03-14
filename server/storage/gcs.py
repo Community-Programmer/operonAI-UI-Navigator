@@ -11,14 +11,16 @@ from __future__ import annotations
 
 import base64
 import logging
-import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from google.cloud import storage as gcs
 
 from server.config import GCS_BUCKET_NAME
 
 logger = logging.getLogger(__name__)
+
+# Signed URLs valid for 7 days
+_SIGNED_URL_EXPIRY = timedelta(days=7)
 
 _client: gcs.Client | None = None
 _bucket: gcs.Bucket | None = None
@@ -42,6 +44,15 @@ def _get_bucket() -> gcs.Bucket | None:
         return None
 
 
+def _generate_signed_url(blob: gcs.Blob) -> str:
+    """Generate a signed URL for a blob."""
+    return blob.generate_signed_url(
+        version="v4",
+        expiration=_SIGNED_URL_EXPIRY,
+        method="GET",
+    )
+
+
 def upload_screenshot(
     session_id: str,
     iteration: int,
@@ -51,7 +62,7 @@ def upload_screenshot(
 ) -> str | None:
     """Upload a base64-encoded JPEG screenshot to GCS.
 
-    Returns the public URL on success, or None on failure.
+    Returns a signed URL on success, or None on failure.
     """
     bucket = _get_bucket()
     if bucket is None:
@@ -64,8 +75,8 @@ def upload_screenshot(
         image_bytes = base64.b64decode(screenshot_b64)
         blob = bucket.blob(blob_path)
         blob.upload_from_string(image_bytes, content_type="image/jpeg")
-        url = blob.public_url
-        logger.debug("Uploaded screenshot: %s", url)
+        url = _generate_signed_url(blob)
+        logger.debug("Uploaded screenshot: %s", blob_path)
         return url
     except Exception as exc:
         logger.warning("Screenshot upload failed: %s", exc)

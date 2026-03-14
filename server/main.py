@@ -48,7 +48,12 @@ from server.navigator_agent.live_tools import (
     unregister_live_websocket,
 )
 from server.segmentation.service import segment_screenshot_payload
-from server.sessions.session_logger import list_sessions, get_session_detail, count_sessions
+from server.sessions.session_logger import (
+    list_sessions,
+    get_session_detail,
+    get_iteration_screenshot,
+    count_sessions,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -289,6 +294,25 @@ async def api_get_session(session_id: str, token: str = Query(...)):
     if detail is None:
         raise HTTPException(status_code=404, detail="Session not found")
     return detail
+
+
+@app.get("/api/sessions/{session_id}/iterations/{iteration}/screenshot")
+async def api_get_iteration_screenshot(
+    session_id: str,
+    iteration: int,
+    token: str = Query(...),
+):
+    """Serve a screenshot as a JPEG image directly from MongoDB."""
+    payload = _get_current_user(token)
+    user_id = payload["sub"]
+    b64 = await asyncio.to_thread(
+        get_iteration_screenshot, session_id, user_id, iteration,
+    )
+    if b64 is None:
+        raise HTTPException(status_code=404, detail="Screenshot not found")
+    from fastapi.responses import Response
+    image_bytes = base64.b64decode(b64)
+    return Response(content=image_bytes, media_type="image/jpeg")
 
 
 # ── WebSocket: Device (Local Helper) ───────────────────────────────

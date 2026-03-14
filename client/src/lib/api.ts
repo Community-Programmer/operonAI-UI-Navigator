@@ -85,6 +85,14 @@ export function getSessionDetail(sessionId: string, token: string) {
   );
 }
 
+/**
+ * Build a URL that serves a screenshot image for a specific iteration.
+ * Used as fallback when the GCS signed URL is missing or broken.
+ */
+export function screenshotUrl(sessionId: string, iteration: number, token: string): string {
+  return `${API_BASE}/api/sessions/${encodeURIComponent(sessionId)}/iterations/${iteration}/screenshot?token=${encodeURIComponent(token)}`;
+}
+
 // ── Helpers ────────────────────────────────────────────────────
 
 export function wsUrl(path: string, token: string, extra?: Record<string, string>): string {
