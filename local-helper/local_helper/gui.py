@@ -4,23 +4,51 @@ import asyncio
 import base64
 import json
 import os
+import pathlib
 import queue
+import re
 import threading
 import time
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime, timezone
 
+from PIL import Image, ImageTk
+
 from local_helper.connection import HelperConnection
 from local_helper.screen import get_screen_size
 
+import sys
+
+def _get_assets_dir() -> pathlib.Path:
+    """Return path to the assets directory, works both in dev and PyInstaller bundle."""
+    if getattr(sys, "frozen", False):
+        return pathlib.Path(sys._MEIPASS) / "assets"
+    return pathlib.Path(__file__).resolve().parent.parent / "assets"
+
+_ASSETS_DIR = _get_assets_dir()
+
 
 class LocalHelperGUI:
+    # Regex patterns for log line colouring
+    _LOG_PATTERNS: list[tuple[re.Pattern, str]] = [
+        (re.compile(r"(error|failed|refused|Screenshot error)", re.I), "log_error"),
+        (re.compile(r"(connected to orchestrator|disconnected from server|executed|paired|success)", re.I), "log_success"),
+        (re.compile(r"(connecting to|reconnect|disconnecting)", re.I), "log_warn"),
+        (re.compile(r"(received command|segmented screenshot|elements)", re.I), "log_info"),
+        (re.compile(r"(connection closed|connection status)", re.I), "log_warn"),
+    ]
+
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
-        self.root.title("Local-Helper")
-        self.root.geometry("1080x680")
-        self.root.minsize(920, 600)
+        self.root.title("Operon AI — Local Agent")
+        self.root.geometry("1246x780")
+        self.root.resizable(False, False)
+
+        # Load window icon
+        self._logo_img: ImageTk.PhotoImage | None = None
+        self._logo_icon: ImageTk.PhotoImage | None = None
+        self._load_logo()
 
         self._event_queue: queue.Queue[tuple[str, object]] = queue.Queue()
         self._connection: HelperConnection | None = None
@@ -28,10 +56,28 @@ class LocalHelperGUI:
 
         self._configure_style()
         self._build_ui()
+        self._configure_log_tags()
         self._seed_defaults()
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
         self.root.after(100, self._drain_events)
+
+    def _load_logo(self) -> None:
+        logo_path = _ASSETS_DIR / "logo.png"
+        if not logo_path.exists():
+            return
+        img = Image.open(logo_path)
+
+        # Header logo (48px tall, keep aspect ratio)
+        header_h = 48
+        ratio = header_h / img.height
+        header_w = int(img.width * ratio)
+        self._logo_img = ImageTk.PhotoImage(img.resize((header_w, header_h), Image.LANCZOS))
+
+        # Window icon (32x32)
+        icon_img = img.resize((32, 32), Image.LANCZOS)
+        self._logo_icon = ImageTk.PhotoImage(icon_img)
+        self.root.iconphoto(True, self._logo_icon)
 
     def _configure_style(self) -> None:
         self.style = ttk.Style(self.root)
@@ -63,16 +109,22 @@ class LocalHelperGUI:
 
         header = ttk.Frame(container)
         header.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 12))
-        header.columnconfigure(0, weight=1)
+        header.columnconfigure(1, weight=1)
 
-        ttk.Label(header, text="Local Helper Control Center", style="HeaderTitle.TLabel").grid(
-            row=0, column=0, sticky="w"
+        # Logo in the header
+        if self._logo_img is not None:
+            logo_label = ttk.Label(header, image=self._logo_img)
+            logo_label.grid(row=0, column=0, rowspan=2, sticky="w", padx=(0, 12))
+
+        title_col = 1 if self._logo_img else 0
+        ttk.Label(header, text="Operon AI", style="HeaderTitle.TLabel").grid(
+            row=0, column=title_col, sticky="w"
         )
         ttk.Label(
             header,
-            text="Desktop pairing, live activity, and runtime telemetry for UI Navigator",
+            text="Desktop agent — device pairing, live activity & runtime telemetry",
             style="HeaderSub.TLabel",
-        ).grid(row=1, column=0, sticky="w", pady=(2, 0))
+        ).grid(row=1, column=title_col, sticky="w", pady=(2, 0))
 
         left_col = ttk.Frame(container)
         left_col.grid(row=1, column=0, sticky="nsew", padx=(0, 10))
@@ -192,7 +244,7 @@ class LocalHelperGUI:
         self._metric_row(details_group, 2, "Session Duration", self.session_duration_value)
         self._metric_row(details_group, 3, "Session Expires", self.session_expiration_value)
 
-        self._append_log("Local helper ready. Enter server URL and device token to pair.")
+        self._append_log("Operon AI agent ready. Enter server URL and device token to pair.")
 
     def _metric_row(self, parent: ttk.LabelFrame, row: int, label: str, value_var: tk.StringVar) -> None:
         row_frame = ttk.Frame(parent)
@@ -287,6 +339,8 @@ class LocalHelperGUI:
 
         self._append_log(f"Connecting to {server_url} ...")
 
+        self.pair_button.configure(text="Disconnect", state="disabled")
+
         self._connection = HelperConnection(
             server_url=server_url,
             token=token,
@@ -297,8 +351,6 @@ class LocalHelperGUI:
 
         self._thread = threading.Thread(target=self._run_connection, daemon=True)
         self._thread.start()
-
-        self.pair_button.configure(text="Disconnect")
 
     def _run_connection(self) -> None:
         try:
@@ -312,7 +364,8 @@ class LocalHelperGUI:
     def _disconnect(self) -> None:
         if self._connection is None:
             return
-        self._append_log("Disconnecting local helper...")
+        self.pair_button.configure(state="disabled")
+        self._append_log("Disconnecting from server...")
         self._connection.stop()
 
     def _clear_logs(self) -> None:
@@ -346,7 +399,7 @@ class LocalHelperGUI:
             elif event_type == "stopped":
                 self._connection = None
                 self._thread = None
-                self.pair_button.configure(text="Connect Device")
+                self.pair_button.configure(text="Connect Device", state="normal")
 
         self.root.after(100, self._drain_events)
 
@@ -354,6 +407,8 @@ class LocalHelperGUI:
         color = "#2fa64a" if connected else "#cc3333"
         self.status_dot.itemconfig(self._dot, fill=color)
         self.status_text.set("Paired" if connected else "Disconnected")
+        if connected:
+            self.pair_button.configure(text="Disconnect", state="normal")
 
     def _apply_metrics(self, metrics: dict) -> None:
         rtt = int(metrics.get("rtt_ms", 0))
@@ -365,11 +420,28 @@ class LocalHelperGUI:
         self.elements_value.set(str(elements))
         self.confidence_value.set(f"{int(avg_conf * 100)}%")
 
+    def _configure_log_tags(self) -> None:
+        """Set up coloured text tags for the activity feed."""
+        self.log_text.tag_configure("log_timestamp", foreground="#6B7280")  # gray
+        self.log_text.tag_configure("log_error", foreground="#F87171")     # red
+        self.log_text.tag_configure("log_success", foreground="#34D399")   # green
+        self.log_text.tag_configure("log_warn", foreground="#FBBF24")     # amber
+        self.log_text.tag_configure("log_info", foreground="#60A5FA")     # blue
+        self.log_text.tag_configure("log_default", foreground="#E5E7EB")  # light gray
+
+    def _classify_log(self, message: str) -> str:
+        """Return the tag name for a log message based on its content."""
+        for pattern, tag in self._LOG_PATTERNS:
+            if pattern.search(message):
+                return tag
+        return "log_default"
+
     def _append_log(self, message: str) -> None:
         timestamp = time.strftime("%H:%M:%S")
-        line = f"[{timestamp}] {message}\n"
+        tag = self._classify_log(message)
         self.log_text.configure(state="normal")
-        self.log_text.insert("end", line)
+        self.log_text.insert("end", f"[{timestamp}] ", "log_timestamp")
+        self.log_text.insert("end", f"{message}\n", tag)
         self.log_text.see("end")
         self.log_text.configure(state="disabled")
 
