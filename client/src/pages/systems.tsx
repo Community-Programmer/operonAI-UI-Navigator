@@ -8,14 +8,11 @@ import {
   RefreshCw,
   Signal,
   Wifi,
-  WifiOff,
   Zap,
 } from "lucide-react";
 import {
   Area,
   AreaChart,
-  Bar,
-  BarChart,
   Cell,
   Pie,
   PieChart,

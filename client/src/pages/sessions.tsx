@@ -13,7 +13,6 @@ import {
   Search,
   StopCircle,
   XCircle,
-  Zap,
 } from "lucide-react";
 
 const STATUS_MAP: Record<

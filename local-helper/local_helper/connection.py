@@ -256,6 +256,15 @@ class HelperConnection:
             raise
 
     def stop(self) -> None:
-        """Signal the connection to stop."""
+        """Signal the connection to stop and force-close the websocket."""
         self._running = False
+        # Force-close the websocket so the async loop exits immediately
+        if self._ws is not None:
+            try:
+                asyncio.get_event_loop().call_soon_threadsafe(
+                    asyncio.ensure_future, self._ws.close()
+                )
+            except RuntimeError:
+                pass  # event loop already closed
         self._notify_connected(False)
+        self._notify_log("Disconnected from server")
