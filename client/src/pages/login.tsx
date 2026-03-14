@@ -28,7 +28,7 @@ export function LoginPage() {
     setLoading(true);
     try {
       const res = await api.login({ username, password });
-      setAuth(res.token, res.user_id);
+      setAuth(res.token, res.user_id, res.username);
       navigate("/app/devices", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

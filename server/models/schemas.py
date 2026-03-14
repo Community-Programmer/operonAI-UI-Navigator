@@ -11,6 +11,7 @@ class LoginRequest(BaseModel):
 class LoginResponse(BaseModel):
     token: str
     user_id: str
+    username: str
 
 
 class PairDeviceRequest(BaseModel):

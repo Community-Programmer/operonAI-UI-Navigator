@@ -74,5 +74,10 @@ class DeviceStore:
             )
         return out
 
+    def delete_pairing(self, user_id: str, device_id: str) -> bool:
+        col = self._collection()
+        result = col.delete_one({"user_id": user_id, "device_id": device_id})
+        return result.deleted_count > 0
+
 
 device_store = DeviceStore()

@@ -1,6 +1,29 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Activity, Clock3, Monitor } from "lucide-react";
+import {
+  Activity,
+  Clock3,
+  Monitor,
+  MonitorSmartphone,
+  RefreshCw,
+  Signal,
+  Wifi,
+  WifiOff,
+  Zap,
+} from "lucide-react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,12 +38,31 @@ function formatDate(value: string) {
   return Number.isNaN(dt.getTime()) ? value : dt.toLocaleString();
 }
 
+function timeAgo(value: string) {
+  if (!value) return "-";
+  const dt = new Date(value);
+  if (Number.isNaN(dt.getTime())) return value;
+  const diffMs = Date.now() - dt.getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
+function isExpired(expiresAt: string) {
+  if (!expiresAt) return false;
+  return new Date(expiresAt).getTime() < Date.now();
+}
+
 export function SystemsPage() {
   const { token } = useAuth();
   const navigate = useNavigate();
   const [systems, setSystems] = useState<DeviceInfo[]>([]);
   const [onlineCount, setOnlineCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState<{ time: string; online: number }[]>([]);
 
   const fetchSystems = useCallback(async () => {
     if (!token) return;
@@ -29,6 +71,13 @@ export function SystemsPage() {
       const res = await api.getActiveSystems(token);
       setSystems(res.systems);
       setOnlineCount(res.online_count);
+      setHistory((prev) => {
+        const next = [
+          ...prev,
+          { time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), online: res.online_count },
+        ];
+        return next.slice(-20);
+      });
     } finally {
       setLoading(false);
     }
@@ -40,76 +89,273 @@ export function SystemsPage() {
     return () => window.clearInterval(id);
   }, [fetchSystems]);
 
+  // Chart data
+  const resolutionData = systems.reduce<Record<string, number>>((acc, s) => {
+    const key = s.screen_width > 0 ? `${s.screen_width}×${s.screen_height}` : "Unknown";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  const resolutionChartData = Object.entries(resolutionData).map(([name, value]) => ({ name, value }));
+
+  const pieColors = ["#3b82f6", "#8b5cf6", "#f59e0b", "#10b981", "#ef4444", "#ec4899"];
+
+  const expiredCount = systems.filter((s) => isExpired(s.session_expires_at)).length;
+  const activeCount = systems.length - expiredCount;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Active Systems</h1>
-          <p className="text-sm text-slate-600">Live overview of currently connected desktops</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Active Systems</h1>
+          <p className="mt-1 text-sm text-slate-500">Real-time overview of connected desktops</p>
         </div>
-        <Button variant="outline" onClick={fetchSystems} disabled={loading}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchSystems}
+          disabled={loading}
+          className="gap-2"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
           Refresh
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-slate-200 bg-white/90">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-slate-600">Online systems</CardDescription>
-            <CardTitle className="text-3xl text-slate-900">{onlineCount}</CardTitle>
-          </CardHeader>
+      {/* Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Online</p>
+                <p className="mt-1 text-3xl font-bold text-slate-900">{onlineCount}</p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
+                <Wifi className="h-5 w-5 text-emerald-600" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              </span>
+              <span className="text-xs text-emerald-600 font-medium">Live monitoring</span>
+            </div>
+          </CardContent>
         </Card>
-        <Card className="border-slate-200 bg-white/90">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-slate-600">Tracked devices</CardDescription>
-            <CardTitle className="text-3xl text-slate-900">{systems.length}</CardTitle>
-          </CardHeader>
+
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Total Tracked</p>
+                <p className="mt-1 text-3xl font-bold text-slate-900">{systems.length}</p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
+                <MonitorSmartphone className="h-5 w-5 text-blue-600" />
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-slate-400">Registered systems</p>
+          </CardContent>
         </Card>
-        <Card className="border-slate-200 bg-white/90">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-slate-600">Last refresh</CardDescription>
-            <CardTitle className="text-base text-slate-900">{new Date().toLocaleTimeString()}</CardTitle>
-          </CardHeader>
+
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Active Sessions</p>
+                <p className="mt-1 text-3xl font-bold text-slate-900">{activeCount}</p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50">
+                <Zap className="h-5 w-5 text-violet-600" />
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-slate-400">Non-expired sessions</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Expired</p>
+                <p className="mt-1 text-3xl font-bold text-slate-900">{expiredCount}</p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50">
+                <Clock3 className="h-5 w-5 text-amber-600" />
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-slate-400">Need renewal</p>
+          </CardContent>
         </Card>
       </div>
 
+      {/* Charts Row */}
       <div className="grid gap-4 lg:grid-cols-2">
-        {systems.length === 0 && (
-          <Card className="border-slate-200 bg-white/90 lg:col-span-2">
-            <CardContent className="flex flex-col items-center justify-center py-12 text-slate-600">
-              <Activity className="mb-3 h-10 w-10 text-slate-300" />
-              <p>No active systems right now.</p>
-            </CardContent>
-          </Card>
-        )}
+        {/* Online History Chart */}
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-slate-700">Online Systems History</CardTitle>
+            <CardDescription className="text-xs text-slate-400">Live connection count over time</CardDescription>
+          </CardHeader>
+          <CardContent className="pb-4">
+            {history.length > 1 ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart data={history}>
+                  <defs>
+                    <linearGradient id="onlineGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="time" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={30} />
+                  <Tooltip
+                    contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="online"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#onlineGrad)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-[200px] items-center justify-center text-sm text-slate-400">
+                <Signal className="mr-2 h-4 w-4" />
+                Collecting data...
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-        {systems.map((system) => (
-          <Card
-            key={system.device_id}
-            className="cursor-pointer border-slate-200 bg-white/90 transition-all hover:border-slate-300 hover:shadow-sm"
-            onClick={() => navigate(`/app/navigate/${system.device_id}`)}
-          >
-            <CardHeader>
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <CardTitle className="text-lg text-slate-900">{system.device_name}</CardTitle>
-                  <CardDescription className="text-slate-600">{system.device_id}</CardDescription>
+        {/* Resolution Distribution */}
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-slate-700">Screen Resolutions</CardTitle>
+            <CardDescription className="text-xs text-slate-400">Distribution across online systems</CardDescription>
+          </CardHeader>
+          <CardContent className="pb-4">
+            {resolutionChartData.length > 0 ? (
+              <div className="flex items-center gap-4">
+                <ResponsiveContainer width="50%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={resolutionChartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {resolutionChartData.map((_, i) => (
+                        <Cell key={i} fill={pieColors[i % pieColors.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex-1 space-y-2">
+                  {resolutionChartData.map((item, i) => (
+                    <div key={item.name} className="flex items-center gap-2">
+                      <div
+                        className="h-3 w-3 rounded-full"
+                        style={{ backgroundColor: pieColors[i % pieColors.length] }}
+                      />
+                      <span className="text-xs text-slate-600">{item.name}</span>
+                      <span className="ml-auto text-xs font-semibold text-slate-900">{item.value}</span>
+                    </div>
+                  ))}
                 </div>
-                <Badge className="bg-emerald-600 text-white">Online</Badge>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-slate-600">
-              <div className="flex items-center gap-2">
-                <Monitor className="h-4 w-4" />
-                <span>Resolution: {system.screen_width} x {system.screen_height}</span>
+            ) : (
+              <div className="flex h-[200px] items-center justify-center text-sm text-slate-400">
+                <Monitor className="mr-2 h-4 w-4" />
+                No systems online
               </div>
-              <div className="flex items-center gap-2">
-                <Clock3 className="h-4 w-4" />
-                <span>Session expires: {formatDate(system.session_expires_at)}</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Systems Grid */}
+      <div>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">
+          Connected Devices ({systems.length})
+        </h2>
+        <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+          {systems.length === 0 && (
+            <Card className="border-slate-200 bg-white shadow-sm lg:col-span-2 xl:col-span-3">
+              <CardContent className="flex flex-col items-center justify-center py-16 text-slate-400">
+                <Activity className="mb-3 h-12 w-12 text-slate-200" />
+                <p className="text-sm font-medium">No active systems right now</p>
+                <p className="mt-1 text-xs">Devices will appear here once they connect</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {systems.map((system) => {
+            const expired = isExpired(system.session_expires_at);
+            return (
+              <Card
+                key={system.device_id}
+                className={`group cursor-pointer border bg-white shadow-sm transition-all hover:shadow-md ${
+                  expired ? "border-amber-200 hover:border-amber-300" : "border-slate-200 hover:border-blue-200"
+                }`}
+                onClick={() => navigate(`/app/navigate/${system.device_id}`)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                        expired ? "bg-amber-50" : "bg-emerald-50"
+                      }`}>
+                        <Monitor className={`h-5 w-5 ${expired ? "text-amber-600" : "text-emerald-600"}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                          {system.device_name}
+                        </p>
+                        <p className="text-[11px] font-mono text-slate-400">{system.device_id}</p>
+                      </div>
+                    </div>
+                    <Badge className={expired
+                      ? "bg-amber-100 text-amber-700 border-amber-200"
+                      : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                    }>
+                      {expired ? "Expired" : "Online"}
+                    </Badge>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <div className="rounded-lg bg-slate-50 px-3 py-2">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Resolution</p>
+                      <p className="mt-0.5 text-xs font-semibold text-slate-700">
+                        {system.screen_width > 0 ? `${system.screen_width}×${system.screen_height}` : "N/A"}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-slate-50 px-3 py-2">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Last Seen</p>
+                      <p className="mt-0.5 text-xs font-semibold text-slate-700">{timeAgo(system.last_seen_at)}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex items-center gap-1.5 text-[11px] text-slate-400">
+                    <Clock3 className="h-3 w-3" />
+                    <span>Expires {formatDate(system.session_expires_at)}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

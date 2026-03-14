@@ -65,6 +65,13 @@ export function killDevice(deviceId: string, token: string) {
   );
 }
 
+export function deleteDevice(deviceId: string, token: string) {
+  return request<{ status: string }>(
+    `/api/devices/${encodeURIComponent(deviceId)}?token=${encodeURIComponent(token)}`,
+    { method: "DELETE" },
+  );
+}
+
 // ── Sessions ───────────────────────────────────────────────────
 
 export function getSessions(

@@ -111,7 +111,7 @@ async def register(req: LoginRequest):
     if created is None:
         raise HTTPException(status_code=400, detail="Username already exists")
     token = create_user_token(created.user_id)
-    return LoginResponse(token=token, user_id=created.user_id)
+    return LoginResponse(token=token, user_id=created.user_id, username=username)
 
 
 @app.post("/api/auth/login", response_model=LoginResponse)
@@ -125,7 +125,7 @@ async def login(req: LoginRequest):
     if user is None or not user_store.verify_password(password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     token = create_user_token(user.user_id)
-    return LoginResponse(token=token, user_id=user.user_id)
+    return LoginResponse(token=token, user_id=user.user_id, username=user.username)
 
 
 @app.post("/api/devices/token", response_model=TokenResponse)
@@ -240,6 +240,26 @@ async def kill_device(device_id: str, token: str = Query(...)):
         except Exception:
             pass
     return {"status": "killed"}
+
+
+@app.delete("/api/devices/{device_id}")
+async def delete_device(device_id: str, token: str = Query(...)):
+    payload = _get_current_user(token)
+    user_id = payload["sub"]
+    deleted = await asyncio.to_thread(device_store.delete_pairing, user_id, device_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Device not found")
+    # Also disconnect if online
+    ws = connection_manager.device_connections.get(device_id)
+    if ws:
+        try:
+            await ws.send_json({"action": "kill"})
+        except Exception:
+            pass
+        connection_manager.device_connections.pop(device_id, None)
+    connection_manager.interrupt_flags.pop(device_id, None)
+    connection_manager.active_tasks.pop(device_id, None)
+    return {"status": "deleted"}
 
 
 @app.post("/api/segment", response_model=SegmentResponse)

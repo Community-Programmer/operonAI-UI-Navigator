@@ -26,7 +26,6 @@ import {
   Mic,
   Monitor,
   ScrollText,
-  Sparkles,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -49,7 +48,7 @@ function pageName(pathname: string): string {
 }
 
 export function DashboardLayout() {
-  const { isLoggedIn, logout, userId } = useAuth();
+  const { isLoggedIn, logout, userId, username } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -57,7 +56,7 @@ export function DashboardLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  const initials = userId?.slice(0, 2).toUpperCase() ?? "U";
+  const initials = username?.slice(0, 2).toUpperCase() ?? userId?.slice(0, 2).toUpperCase() ?? "U";
   const activeDeviceId = extractDeviceId(location.pathname);
 
   return (
@@ -67,19 +66,9 @@ export function DashboardLayout() {
         <SidebarHeader className="px-5 py-4">
           <button
             onClick={() => navigate("/app/systems")}
-            className="flex items-center gap-2.5 focus:outline-none"
+            className="flex items-center focus:outline-none"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 shadow-lg shadow-blue-500/20">
-              <Sparkles className="h-3.5 w-3.5 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[13px] font-bold leading-none tracking-tight text-white">
-                UI Navigator
-              </span>
-              <span className="text-[10px] font-medium leading-none text-slate-500">
-                Desktop Automation
-              </span>
-            </div>
+            <img src="/logo.png" alt="Logo" className="h-8 w-30 rounded-lg object-contain" />
           </button>
         </SidebarHeader>
 
@@ -161,7 +150,7 @@ export function DashboardLayout() {
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-medium text-slate-200">{userId?.slice(0, 12)}</p>
+              <p className="truncate text-xs font-medium text-slate-200">{username ?? userId?.slice(0, 12)}</p>
               <p className="text-[10px] text-slate-500">Online</p>
             </div>
             <Button
@@ -178,18 +167,18 @@ export function DashboardLayout() {
 
       <SidebarInset className="flex flex-col">
         {/* ── Top bar ── */}
-        <header className="flex h-12 shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4">
-          <SidebarTrigger className="-ml-1 text-slate-500 hover:text-slate-900" />
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-slate-200/80 bg-white px-5">
+          <SidebarTrigger className="-ml-1 text-slate-400 hover:text-slate-900" />
           <Separator orientation="vertical" className="h-5 bg-slate-200" />
-          <div className="flex items-center gap-1.5 text-sm text-slate-500">
+          <div className="flex items-center gap-1.5 text-sm text-slate-400">
             <span>Dashboard</span>
             <ChevronRight className="h-3 w-3" />
-            <span className="font-medium text-slate-900">{pageName(location.pathname)}</span>
+            <span className="font-semibold text-slate-900">{pageName(location.pathname)}</span>
           </div>
         </header>
 
         {/* ── Content ── */}
-        <main className="flex-1 overflow-auto bg-slate-50 p-5">
+        <main className="flex-1 overflow-auto bg-white p-6">
           <Outlet />
         </main>
       </SidebarInset>

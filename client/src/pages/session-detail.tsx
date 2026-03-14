@@ -155,7 +155,7 @@ function IterationCard({
 
           <div className="flex shrink-0 items-center gap-2 text-slate-400">
             {iter.element_count > 0 && (
-              <span className="text-[10px] text-slate-400">{iter.element_count} el.</span>
+              <span className="text-[10px] text-slate-400">{iter.element_count} elements</span>
             )}
             {expanded ? (
               <ChevronUp className="h-4 w-4" />
