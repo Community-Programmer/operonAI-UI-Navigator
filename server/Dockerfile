@@ -63,9 +63,5 @@ ENV PYTHONUNBUFFERED=1
 # Expose the FastAPI port
 EXPOSE 8000
 
-# Run uvicorn — Cloud Run sets PORT, default to 8000
-CMD ["python", "-m", "uvicorn", "server.main:app", \
-     "--host", "0.0.0.0", \
-     "--port", "8000", \
-     "--workers", "1", \
-     "--timeout-keep-alive", "120"]
+# Run uvicorn — Cloud Run injects PORT env var, default to 8000
+CMD ["sh", "-c", "python -m uvicorn server.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1 --timeout-keep-alive 120"]

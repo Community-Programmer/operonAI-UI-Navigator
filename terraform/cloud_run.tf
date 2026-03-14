@@ -111,10 +111,10 @@ resource "google_cloud_run_v2_service" "server" {
         http_get {
           path = "/docs"
         }
-        initial_delay_seconds = 10
-        period_seconds        = 5
-        failure_threshold     = 10
-        timeout_seconds       = 3
+        initial_delay_seconds = 15
+        period_seconds        = 10
+        failure_threshold     = 30
+        timeout_seconds       = 5
       }
 
       liveness_probe {
