@@ -107,13 +107,15 @@ resource "google_cloud_run_v2_service" "server" {
       }
 
       # ── Health check (startup probe) ────────────────────────────
+      # TCP probe — uvicorn binds the port once all Python imports
+      # (PyTorch, YOLO, EasyOCR, ADK) have finished.  Budget: ~600s.
       startup_probe {
-        http_get {
-          path = "/docs"
+        tcp_socket {
+          port = 8000
         }
-        initial_delay_seconds = 15
-        period_seconds        = 10
-        failure_threshold     = 30
+        initial_delay_seconds = 0
+        period_seconds        = 15
+        failure_threshold     = 40
         timeout_seconds       = 5
       }
 
@@ -122,7 +124,7 @@ resource "google_cloud_run_v2_service" "server" {
           path = "/docs"
         }
         period_seconds  = 30
-        timeout_seconds = 3
+        timeout_seconds = 5
       }
     }
   }
