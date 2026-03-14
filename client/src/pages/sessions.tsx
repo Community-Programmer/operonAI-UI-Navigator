@@ -4,24 +4,64 @@ import { useAuth } from "@/hooks/use-auth";
 import { getSessions } from "@/lib/api";
 import type { SessionSummary } from "@/types";
 import {
-  Clock,
   CheckCircle2,
-  XCircle,
+  ChevronRight,
+  Clock,
+  Filter,
   Loader2,
   AlertTriangle,
-  StopCircle,
-  ChevronRight,
   Search,
-  Filter,
+  StopCircle,
+  XCircle,
+  Zap,
 } from "lucide-react";
 
-const STATUS_CONFIG: Record<string, { icon: typeof CheckCircle2; color: string; label: string }> = {
-  complete: { icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50", label: "Complete" },
-  failed: { icon: XCircle, color: "text-red-600 bg-red-50", label: "Failed" },
-  running: { icon: Loader2, color: "text-blue-600 bg-blue-50", label: "Running" },
-  interrupted: { icon: StopCircle, color: "text-amber-600 bg-amber-50", label: "Interrupted" },
-  max_iterations: { icon: AlertTriangle, color: "text-orange-600 bg-orange-50", label: "Max Iterations" },
-  needs_human: { icon: AlertTriangle, color: "text-purple-600 bg-purple-50", label: "Needs Human" },
+const STATUS_MAP: Record<
+  string,
+  { icon: typeof CheckCircle2; iconColor: string; bgColor: string; textColor: string; label: string }
+> = {
+  complete: {
+    icon: CheckCircle2,
+    iconColor: "text-emerald-500",
+    bgColor: "bg-emerald-50",
+    textColor: "text-emerald-700",
+    label: "Complete",
+  },
+  failed: {
+    icon: XCircle,
+    iconColor: "text-rose-500",
+    bgColor: "bg-rose-50",
+    textColor: "text-rose-700",
+    label: "Failed",
+  },
+  running: {
+    icon: Loader2,
+    iconColor: "text-blue-500",
+    bgColor: "bg-blue-50",
+    textColor: "text-blue-700",
+    label: "Running",
+  },
+  interrupted: {
+    icon: StopCircle,
+    iconColor: "text-amber-500",
+    bgColor: "bg-amber-50",
+    textColor: "text-amber-700",
+    label: "Interrupted",
+  },
+  max_iterations: {
+    icon: AlertTriangle,
+    iconColor: "text-orange-500",
+    bgColor: "bg-orange-50",
+    textColor: "text-orange-700",
+    label: "Max Iterations",
+  },
+  needs_human: {
+    icon: AlertTriangle,
+    iconColor: "text-purple-500",
+    bgColor: "bg-purple-50",
+    textColor: "text-purple-700",
+    label: "Needs Human",
+  },
 };
 
 function formatDuration(seconds: number | null): string {
@@ -39,7 +79,12 @@ function formatDate(iso: string): string {
   if (diff < 60_000) return "Just now";
   if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
   if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export function SessionsPage() {
@@ -63,116 +108,147 @@ export function SessionsPage() {
       .finally(() => setLoading(false));
   }, [token, statusFilter]);
 
-  const filtered = sessions.filter((s) =>
-    !searchQuery || s.goal.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.device_name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filtered = sessions.filter(
+    (s) =>
+      !searchQuery ||
+      s.goal.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.device_name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const completedCount = sessions.filter((s) => s.status === "complete").length;
+  const failedCount = sessions.filter((s) => s.status === "failed").length;
+  const runningCount = sessions.filter((s) => s.status === "running").length;
+
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Session Logs</h1>
-        <p className="text-sm text-slate-500">
-          Monitor all agent sessions — commands, screenshots, reasoning, and actions
+        <h1 className="text-xl font-bold text-slate-900">Session Logs</h1>
+        <p className="mt-0.5 text-sm text-slate-500">
+          Browse all agent sessions — goals, actions, reasoning, and screenshots
         </p>
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: "Total Sessions", value: total, color: "text-slate-900" },
-          { label: "Completed", value: sessions.filter((s) => s.status === "complete").length, color: "text-emerald-600" },
-          { label: "Failed", value: sessions.filter((s) => s.status === "failed").length, color: "text-red-600" },
-          { label: "Running", value: sessions.filter((s) => s.status === "running").length, color: "text-blue-600" },
+          { label: "Total", value: total, accent: "border-l-slate-400" },
+          { label: "Completed", value: completedCount, accent: "border-l-emerald-500" },
+          { label: "Failed", value: failedCount, accent: "border-l-rose-500" },
+          { label: "Running", value: runningCount, accent: "border-l-blue-500" },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-xl border bg-white p-4 shadow-sm">
-            <p className="text-xs font-medium text-slate-500">{stat.label}</p>
-            <p className={`mt-1 text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+          <div
+            key={stat.label}
+            className={`rounded-lg border border-slate-200 border-l-[3px] ${stat.accent} bg-white px-4 py-3 shadow-sm`}
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              {stat.label}
+            </p>
+            <p className="mt-1 text-2xl font-bold text-slate-900">{stat.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search by goal or device..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border bg-white py-2 pl-10 pr-4 text-sm text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-slate-400" />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-lg border bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-400"
-          >
-            <option value="">All statuses</option>
-            <option value="complete">Complete</option>
-            <option value="failed">Failed</option>
-            <option value="running">Running</option>
-            <option value="interrupted">Interrupted</option>
-            <option value="max_iterations">Max Iterations</option>
-          </select>
-        </div>
+      {/* Filter bar */}
+      <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+        <Search className="h-4 w-4 shrink-0 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Search by goal or device…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="min-w-0 flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
+        />
+        <div className="h-5 w-px bg-slate-200" />
+        <Filter className="h-4 w-4 shrink-0 text-slate-400" />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="bg-transparent text-sm font-medium text-slate-700 outline-none"
+        >
+          <option value="">All</option>
+          <option value="complete">Complete</option>
+          <option value="failed">Failed</option>
+          <option value="running">Running</option>
+          <option value="interrupted">Interrupted</option>
+          <option value="max_iterations">Max Iterations</option>
+        </select>
       </div>
 
-      {/* Session List */}
+      {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
-          <span className="ml-2 text-sm text-slate-500">Loading sessions...</span>
+          <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+          <span className="ml-2 text-sm text-slate-500">Loading sessions…</span>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border bg-white p-12 text-center">
-          <Clock className="mx-auto h-10 w-10 text-slate-300" />
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white py-16">
+          <Clock className="h-8 w-8 text-slate-300" />
           <p className="mt-3 text-sm font-medium text-slate-600">No sessions found</p>
-          <p className="mt-1 text-xs text-slate-400">Sessions will appear here after you run agent tasks</p>
+          <p className="mt-1 text-xs text-slate-400">
+            Sessions appear here after you run agent tasks
+          </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        /* Table-like layout */
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          {/* Table header */}
+          <div className="grid grid-cols-[1fr_120px_100px_90px_80px_28px] items-center gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span>Goal</span>
+            <span>Device</span>
+            <span>Status</span>
+            <span>Duration</span>
+            <span>When</span>
+            <span />
+          </div>
+
+          {/* Rows */}
           {filtered.map((session) => {
-            const cfg = STATUS_CONFIG[session.status] || STATUS_CONFIG.running;
+            const cfg = STATUS_MAP[session.status] ?? STATUS_MAP.running;
             const Icon = cfg.icon;
             return (
               <button
                 key={session.session_id}
                 onClick={() => navigate(`/app/sessions/${session.session_id}`)}
-                className="group flex w-full items-center gap-4 rounded-xl border bg-white p-4 text-left shadow-sm transition-all hover:border-blue-200 hover:shadow-md"
+                className="group grid w-full grid-cols-[1fr_120px_100px_90px_80px_28px] items-center gap-3 border-b border-slate-50 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-slate-50"
               >
-                {/* Status Icon */}
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${cfg.color}`}>
-                  <Icon className={`h-5 w-5 ${session.status === "running" ? "animate-spin" : ""}`} />
+                {/* Goal */}
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-slate-900">
+                    {session.goal}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-slate-400">
+                    {session.total_iterations} iteration{session.total_iterations !== 1 ? "s" : ""}
+                  </p>
                 </div>
 
-                {/* Content */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="truncate text-sm font-semibold text-slate-900">
-                      {session.goal}
-                    </p>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${cfg.color}`}>
-                      {cfg.label}
-                    </span>
-                  </div>
-                  <div className="mt-1 flex items-center gap-3 text-xs text-slate-500">
-                    <span>{session.device_name}</span>
-                    <span>·</span>
-                    <span>{session.total_iterations} iterations</span>
-                    <span>·</span>
-                    <span>{formatDuration(session.duration_seconds)}</span>
-                    <span>·</span>
-                    <span>{formatDate(session.started_at)}</span>
-                  </div>
-                </div>
+                {/* Device */}
+                <span className="truncate text-xs text-slate-500">
+                  {session.device_name}
+                </span>
+
+                {/* Status */}
+                <span
+                  className={`inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${cfg.bgColor} ${cfg.textColor}`}
+                >
+                  <Icon
+                    className={`h-3 w-3 ${cfg.iconColor} ${session.status === "running" ? "animate-spin" : ""}`}
+                  />
+                  {cfg.label}
+                </span>
+
+                {/* Duration */}
+                <span className="text-xs tabular-nums text-slate-600">
+                  {formatDuration(session.duration_seconds)}
+                </span>
+
+                {/* When */}
+                <span className="text-[11px] text-slate-400">
+                  {formatDate(session.started_at)}
+                </span>
 
                 {/* Arrow */}
-                <ChevronRight className="h-5 w-5 shrink-0 text-slate-300 transition-colors group-hover:text-blue-500" />
+                <ChevronRight className="h-4 w-4 text-slate-300 transition-colors group-hover:text-slate-600" />
               </button>
             );
           })}
