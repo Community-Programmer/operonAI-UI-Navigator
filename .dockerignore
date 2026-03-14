@@ -1,0 +1,28 @@
+# Exclude everything not needed in the Docker build context
+.git
+.github
+.vscode
+.env
+**/.env
+*.md
+*.bat
+*.sh
+*.exe
+*.spec
+
+# Local helper & client are not deployed as part of the server
+local-helper/
+client/
+terraform/
+build/
+skyvern/
+
+# Python artifacts
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.mypy_cache
+.venv
+venv
+node_modules

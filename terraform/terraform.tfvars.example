@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────────────────────────────
+# Example terraform.tfvars — copy to terraform.tfvars and fill in
+# ─────────────────────────────────────────────────────────────────────
+# NEVER commit real secrets to version control.  Use this file locally
+# or inject values via CI environment variables / Terraform Cloud.
+# ─────────────────────────────────────────────────────────────────────
+
+project_id  = "my-gcp-project-id"
+region      = "us-central1"
+zone        = "us-central1-a"
+environment = "prod"
+
+# ── Secrets (sensitive — keep out of source control) ────────────────
+google_api_key = "AIza..."
+jwt_secret_key = "super-secret-jwt-key"
+mongodb_uri    = "mongodb+srv://user:pass@cluster.mongodb.net/?retryWrites=true"
+mongodb_db_name = "ui_navigator"
+sentry_dsn     = ""   # optional
+
+# ── Cloud Run ───────────────────────────────────────────────────────
+cloud_run_service_name = "operon-server"
+cloud_run_cpu          = "4"
+cloud_run_memory       = "8Gi"
+cloud_run_min_instances = 1
+cloud_run_max_instances = 5
+cloud_run_timeout       = 3600
+cloud_run_concurrency   = 80
+
+# ── GCS ─────────────────────────────────────────────────────────────
+gcs_bucket_name  = "operon-ai-screenshots"
+gcs_location     = "US"
+gcs_lifecycle_days = 30
+
+# ── CORS origins (comma-separated) ─────────────────────────────────
+cors_origins = "https://app.operonai.com,http://localhost:5173"
+
+# ── Docker ──────────────────────────────────────────────────────────
+# Leave empty for initial bootstrap (uses placeholder image).
+# Cloud Build manages the actual image via commit SHA tags.
+docker_image_tag = ""
+
+# ── CI/CD — GitHub ──────────────────────────────────────────────────
+github_owner = "your-github-user-or-org"
+github_repo  = "operon-ai"
