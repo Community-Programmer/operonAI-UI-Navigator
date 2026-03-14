@@ -137,8 +137,8 @@ export function SessionsPage() {
     <div className="mx-auto max-w-6xl space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-slate-900">Session Logs</h1>
-        <p className="mt-0.5 text-sm text-slate-500">
+        <h1 className="text-xl font-bold text-[#2D2018]">Session Logs</h1>
+        <p className="mt-0.5 text-sm text-[#6B5046]">
           Browse all agent sessions — goals, actions, reasoning, and screenshots
         </p>
       </div>
@@ -146,39 +146,39 @@ export function SessionsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: "Total", value: total, accent: "border-l-slate-400" },
+          { label: "Total", value: total, accent: "border-l-[#C9A48C]" },
           { label: "Completed", value: completedCount, accent: "border-l-emerald-500" },
           { label: "Failed", value: failedCount, accent: "border-l-rose-500" },
-          { label: "Running", value: runningCount, accent: "border-l-blue-500" },
+          { label: "Running", value: runningCount, accent: "border-l-[#9B3C3C]" },
         ].map((stat) => (
           <div
             key={stat.label}
-            className={`rounded-lg border border-slate-200 border-l-[3px] ${stat.accent} bg-white px-4 py-3 shadow-sm`}
+            className={`rounded-lg border border-[#E8DDD4] border-l-[3px] ${stat.accent} bg-white px-4 py-3 shadow-sm`}
           >
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#8A7060]">
               {stat.label}
             </p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{stat.value}</p>
+            <p className="mt-1 text-2xl font-bold text-[#2D2018]">{stat.value}</p>
           </div>
         ))}
       </div>
 
       {/* Filter bar */}
-      <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
-        <Search className="h-4 w-4 shrink-0 text-slate-400" />
+      <div className="flex items-center gap-3 rounded-lg border border-[#E8DDD4] bg-white px-4 py-2.5 shadow-sm">
+        <Search className="h-4 w-4 shrink-0 text-[#8A7060]" />
         <input
           type="text"
           placeholder="Search by goal or device…"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="min-w-0 flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
+          className="min-w-0 flex-1 bg-transparent text-sm text-[#2D2018] outline-none placeholder:text-[#C9A48C]"
         />
-        <div className="h-5 w-px bg-slate-200" />
-        <Filter className="h-4 w-4 shrink-0 text-slate-400" />
+        <div className="h-5 w-px bg-[#E8DDD4]" />
+        <Filter className="h-4 w-4 shrink-0 text-[#8A7060]" />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-transparent text-sm font-medium text-slate-700 outline-none"
+          className="bg-transparent text-sm font-medium text-[#5C3D2E] outline-none"
         >
           <option value="">All</option>
           <option value="complete">Complete</option>
@@ -192,22 +192,22 @@ export function SessionsPage() {
       {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
-          <span className="ml-2 text-sm text-slate-500">Loading sessions…</span>
+          <Loader2 className="h-5 w-5 animate-spin text-[#C9A48C]" />
+          <span className="ml-2 text-sm text-[#6B5046]">Loading sessions…</span>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white py-16">
-          <Clock className="h-8 w-8 text-slate-300" />
-          <p className="mt-3 text-sm font-medium text-slate-600">No sessions found</p>
-          <p className="mt-1 text-xs text-slate-400">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[#E8DDD4] bg-white py-16">
+          <Clock className="h-8 w-8 text-[#D4B8A0]" />
+          <p className="mt-3 text-sm font-medium text-[#5C3D2E]">No sessions found</p>
+          <p className="mt-1 text-xs text-[#8A7060]">
             Sessions appear here after you run agent tasks
           </p>
         </div>
       ) : (
         /* Table-like layout */
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-[#E8DDD4] bg-white shadow-sm">
           {/* Table header */}
-          <div className="grid grid-cols-[1fr_120px_100px_90px_80px_28px] items-center gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <div className="grid grid-cols-[1fr_120px_100px_90px_80px_28px] items-center gap-3 border-b border-[#E8DDD4] bg-[#FAF5F0]/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-[#8A7060]">
             <span>Goal</span>
             <span>Device</span>
             <span>Status</span>
@@ -224,12 +224,12 @@ export function SessionsPage() {
               <button
                 key={session.session_id}
                 onClick={() => navigate(`/app/sessions/${session.session_id}`)}
-                className="group grid w-full grid-cols-[1fr_120px_100px_90px_80px_28px] items-center gap-3 border-b border-slate-50 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-slate-50"
+                className="group grid w-full grid-cols-[1fr_120px_100px_90px_80px_28px] items-center gap-3 border-b border-[#F5EDE6] px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-[#FAF5F0]"
               >
                 {/* Goal */}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="truncate text-sm font-medium text-slate-900">
+                    <p className="truncate text-sm font-medium text-[#2D2018]">
                       {session.goal}
                     </p>
                     {session.mode === "voice" && (
@@ -238,13 +238,13 @@ export function SessionsPage() {
                       </span>
                     )}
                   </div>
-                  <p className="mt-0.5 text-[11px] text-slate-400">
+                  <p className="mt-0.5 text-[11px] text-[#8A7060]">
                     {session.total_iterations} iteration{session.total_iterations !== 1 ? "s" : ""}
                   </p>
                 </div>
 
                 {/* Device */}
-                <span className="truncate text-xs text-slate-500">
+                <span className="truncate text-xs text-[#6B5046]">
                   {session.device_name}
                 </span>
 
@@ -259,17 +259,17 @@ export function SessionsPage() {
                 </span>
 
                 {/* Duration */}
-                <span className="text-xs tabular-nums text-slate-600">
+                <span className="text-xs tabular-nums text-[#5C3D2E]">
                   {formatDuration(session.duration_seconds)}
                 </span>
 
                 {/* When */}
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[11px] text-[#8A7060]">
                   {formatDate(session.started_at)}
                 </span>
 
                 {/* Arrow */}
-                <ChevronRight className="h-4 w-4 text-slate-300 transition-colors group-hover:text-slate-600" />
+                <ChevronRight className="h-4 w-4 text-[#D4B8A0] transition-colors group-hover:text-[#5C3D2E]" />
               </button>
             );
           })}

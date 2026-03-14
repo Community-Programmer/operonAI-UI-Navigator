@@ -72,20 +72,20 @@ export function VoicePage() {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col gap-3">
       {/* ── Top bar ── */}
-      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+      <div className="flex items-center justify-between rounded-xl border border-[#E8DDD4] bg-white px-4 py-2.5 shadow-sm">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-500 hover:text-slate-900"
+            className="h-8 w-8 text-[#6B5046] hover:text-[#2D2018]"
             onClick={() => nav(`/app/navigate/${deviceId}`)}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <Separator orientation="vertical" className="h-6 bg-slate-200" />
+          <Separator orientation="vertical" className="h-6 bg-[#E8DDD4]" />
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-sm font-semibold text-slate-900">Voice</h1>
+              <h1 className="text-sm font-semibold text-[#2D2018]">Voice</h1>
               <Badge
                 variant="outline"
                 className={`text-[10px] ${
@@ -113,7 +113,7 @@ export function VoicePage() {
                 </Badge>
               )}
             </div>
-            <p className="mt-0.5 font-mono text-[11px] text-slate-400">{deviceId}</p>
+            <p className="mt-0.5 font-mono text-[11px] text-[#8A7060]">{deviceId}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -130,7 +130,7 @@ export function VoicePage() {
           ) : (
             <Button
               size="sm"
-              className="h-8 gap-1.5 bg-slate-900 text-xs text-white hover:bg-slate-800"
+              className="h-8 gap-1.5 bg-[#9B3C3C] text-xs text-white hover:bg-[#843333]"
               onClick={connect}
             >
               <Phone className="h-3.5 w-3.5" />
@@ -145,9 +145,9 @@ export function VoicePage() {
         {/* Left column: screenshot + mic */}
         <div className="flex min-h-0 flex-col gap-3">
           {/* Screenshot */}
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Live View</span>
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-[#E8DDD4] bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#E8DDD4]/60 px-4 py-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#8A7060]">Live View</span>
               {listening && (
                 <span className="flex items-center gap-1.5 text-[10px] font-medium text-red-600">
                   <span className="relative flex h-1.5 w-1.5">
@@ -158,7 +158,7 @@ export function VoicePage() {
                 </span>
               )}
             </div>
-            <div className="flex flex-1 items-center justify-center bg-slate-950 p-2">
+            <div className="flex flex-1 items-center justify-center bg-[#2D2018] p-2">
               {screenshot ? (
                 <img
                   src={screenshot}
@@ -166,7 +166,7 @@ export function VoicePage() {
                   className="max-h-full max-w-full rounded object-contain"
                 />
               ) : (
-                <div className="flex flex-col items-center gap-2 text-slate-500">
+                <div className="flex flex-col items-center gap-2 text-[#8A7060]">
                   <ImageIcon className="h-8 w-8 opacity-30" />
                   <p className="text-xs">
                     {connected
@@ -179,14 +179,14 @@ export function VoicePage() {
           </div>
 
           {/* Mic control */}
-          <div className="flex items-center justify-center gap-4 rounded-xl border border-slate-200 bg-white px-6 py-3 shadow-sm">
+          <div className="flex items-center justify-center gap-4 rounded-xl border border-[#E8DDD4] bg-white px-6 py-3 shadow-sm">
             <button
               onClick={listening ? stopMic : startMic}
               disabled={!connected}
               className={`relative flex h-12 w-12 items-center justify-center rounded-full transition-all focus:outline-none disabled:opacity-30 ${
                 listening
                   ? "bg-red-500 text-white shadow-lg shadow-red-500/25"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white hover:shadow-lg"
+                  : "bg-[#FAF5F0] text-[#5C3D2E] hover:bg-[#9B3C3C] hover:text-white hover:shadow-lg"
               }`}
             >
               {listening && (
@@ -199,14 +199,14 @@ export function VoicePage() {
               )}
             </button>
             <div>
-              <p className="text-sm font-medium text-slate-700">
+              <p className="text-sm font-medium text-[#2D2018]">
                 {!connected
                   ? "Connect first"
                   : listening
                     ? "Listening… speak a command"
                     : "Click to start speaking"}
               </p>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-[#8A7060]">
                 {!connected
                   ? "Press Connect above to begin"
                   : listening
@@ -218,17 +218,17 @@ export function VoicePage() {
         </div>
 
         {/* Right: tabbed execution panel */}
-        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-[#E8DDD4] bg-white shadow-sm">
           {/* Tabs */}
-          <div className="flex shrink-0 border-b border-slate-100">
+          <div className="flex shrink-0 border-b border-[#E8DDD4]/60">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`relative flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${
                   activeTab === tab.key
-                    ? "text-slate-900"
-                    : "text-slate-400 hover:text-slate-600"
+                    ? "text-[#2D2018]"
+                    : "text-[#8A7060] hover:text-[#5C3D2E]"
                 }`}
               >
                 {tab.label}
@@ -236,15 +236,15 @@ export function VoicePage() {
                   <span
                     className={`rounded-full px-1.5 py-px text-[9px] font-bold ${
                       activeTab === tab.key
-                        ? "bg-slate-900 text-white"
-                        : "bg-slate-100 text-slate-500"
+                        ? "bg-[#9B3C3C] text-white"
+                        : "bg-[#FAF5F0] text-[#8A7060]"
                     }`}
                   >
                     {tab.count}
                   </span>
                 )}
                 {activeTab === tab.key && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-900" />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9B3C3C]" />
                 )}
               </button>
             ))}
@@ -291,7 +291,7 @@ export function VoicePage() {
                             i + 1
                           )}
                         </div>
-                        <span className="min-w-0 flex-1 whitespace-pre-wrap break-words font-mono text-[12px] leading-relaxed text-slate-700">
+                        <span className="min-w-0 flex-1 whitespace-pre-wrap break-words font-mono text-[12px] leading-relaxed text-[#5C3D2E]">
                           {log.message}
                         </span>
                       </div>
@@ -318,10 +318,10 @@ export function VoicePage() {
 
           {/* Footer */}
           {logs.length > 0 && (
-            <div className="shrink-0 border-t border-slate-100 px-3 py-1.5">
+            <div className="shrink-0 border-t border-[#E8DDD4]/60 px-3 py-1.5">
               <button
                 onClick={clearLogs}
-                className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-600"
+                className="flex items-center gap-1 text-[10px] text-[#8A7060] hover:text-[#5C3D2E]"
               >
                 <Trash2 className="h-3 w-3" />
                 Clear all
@@ -332,7 +332,7 @@ export function VoicePage() {
       </div>
 
       {/* ── Text input bar ── */}
-      <div className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+      <div className="rounded-xl border border-[#E8DDD4] bg-white px-4 py-2.5 shadow-sm">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -342,7 +342,7 @@ export function VoicePage() {
         >
           <Input
             placeholder={connected ? "Or type a command…" : "Connect first…"}
-            className="border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white"
+            className="border-[#E8DDD4] bg-[#FAF5F0] text-sm text-[#2D2018] placeholder:text-[#8A7060] focus:bg-white"
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
             disabled={!connected}
@@ -350,7 +350,7 @@ export function VoicePage() {
           <Button
             type="submit"
             size="sm"
-            className="h-9 gap-1.5 bg-slate-900 px-4 text-white hover:bg-slate-800"
+            className="h-9 gap-1.5 bg-[#9B3C3C] px-4 text-white hover:bg-[#843333]"
             disabled={!connected || !textInput.trim()}
           >
             <Send className="h-3.5 w-3.5" />
@@ -365,9 +365,9 @@ export function VoicePage() {
 /* ── Empty state ── */
 function EmptyState({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-slate-300">
+    <div className="flex flex-col items-center justify-center py-12 text-[#D4B8A0]">
       {icon}
-      <p className="mt-2 text-xs text-slate-400">{text}</p>
+      <p className="mt-2 text-xs text-[#8A7060]">{text}</p>
     </div>
   );
 }
@@ -381,11 +381,11 @@ function ConversationBubble({ log }: { log: LogEntry }) {
       <div
         className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-[12px] leading-relaxed ${
           isUser
-            ? "rounded-br-md bg-slate-900 text-white"
-            : "rounded-bl-md bg-blue-50 text-slate-800"
+            ? "rounded-br-md bg-[#2D2018] text-white"
+            : "rounded-bl-md bg-[#FAF5F0] text-[#2D2018]"
         }`}
       >
-        <p className={`mb-0.5 text-[10px] font-bold ${isUser ? "text-slate-400" : "text-blue-500"}`}>
+        <p className={`mb-0.5 text-[10px] font-bold ${isUser ? "text-[#8A7060]" : "text-[#9B3C3C]"}`}>
           {isUser ? "You" : "Agent"}
         </p>
         <span className="whitespace-pre-wrap break-words">{log.message}</span>
@@ -397,7 +397,7 @@ function ConversationBubble({ log }: { log: LogEntry }) {
 /* ── Voice Log Item ── */
 function VoiceLogItem({ log }: { log: LogEntry }) {
   const styles: Record<string, { icon: React.ReactNode; bg: string }> = {
-    user_voice: { icon: <Mic className="h-3 w-3 text-slate-500" />, bg: "" },
+    user_voice: { icon: <Mic className="h-3 w-3 text-[#6B5046]" />, bg: "" },
     agent_voice: { icon: <Zap className="h-3 w-3 text-blue-500" />, bg: "bg-blue-50/50" },
     agent_response: { icon: <Zap className="h-3 w-3 text-blue-500" />, bg: "bg-blue-50/50" },
     thinking: { icon: <Brain className="h-3 w-3 text-violet-500" />, bg: "bg-violet-50" },
@@ -405,7 +405,7 @@ function VoiceLogItem({ log }: { log: LogEntry }) {
     tool_result: { icon: <Check className="h-3 w-3 text-emerald-500" />, bg: "bg-emerald-50" },
     error: { icon: <Zap className="h-3 w-3 text-rose-500" />, bg: "bg-rose-50" },
     warning: { icon: <Zap className="h-3 w-3 text-amber-500" />, bg: "bg-amber-50" },
-    status: { icon: <Zap className="h-3 w-3 text-slate-400" />, bg: "" },
+    status: { icon: <Zap className="h-3 w-3 text-[#8A7060]" />, bg: "" },
   };
 
   const style = styles[log.type] ?? styles.status;
@@ -413,7 +413,7 @@ function VoiceLogItem({ log }: { log: LogEntry }) {
   return (
     <div className={`flex items-start gap-2 rounded-md px-2.5 py-1.5 text-[11px] ${style.bg}`}>
       <span className="mt-0.5 shrink-0">{style.icon}</span>
-      <span className="min-w-0 flex-1 whitespace-pre-wrap break-words leading-relaxed text-slate-700">
+      <span className="min-w-0 flex-1 whitespace-pre-wrap break-words leading-relaxed text-[#5C3D2E]">
         {log.message}
       </span>
     </div>

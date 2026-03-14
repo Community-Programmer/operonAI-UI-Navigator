@@ -45,25 +45,25 @@ export function SignupPage() {
   }
 
   return (
-    <div className="relative flex min-h-svh items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_bottom_right,_#d3f0f8_0%,_#f6fbfd_40%,_#f6f8fb_100%)] p-4">
-      <div className="pointer-events-none absolute -top-24 right-0 h-64 w-64 rounded-full bg-cyan-200/40 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 left-0 h-64 w-64 rounded-full bg-sky-200/40 blur-3xl" />
+    <div className="relative flex min-h-svh items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_bottom_right,_#F5EDE8_0%,_#FAF5F0_40%,_#FEFCFA_100%)] p-4">
+      <div className="pointer-events-none absolute -top-24 right-0 h-64 w-64 rounded-full bg-[#D4B8A0]/30 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 left-0 h-64 w-64 rounded-full bg-[#C9A48C]/25 blur-3xl" />
 
-      <Card className="z-10 w-full max-w-md border-white/60 bg-white/80 shadow-2xl backdrop-blur">
+      <Card className="z-10 w-full max-w-md border-[#E8DDD4]/60 bg-white/80 shadow-2xl backdrop-blur">
         <CardHeader className="space-y-4">
           <Link
             to="/"
-            className="inline-flex w-fit items-center gap-1 text-xs font-medium text-slate-600 hover:text-slate-900"
+            className="inline-flex w-fit items-center gap-1 text-xs font-medium text-[#6B5046] hover:text-[#2D2018]"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to home
           </Link>
           <div className="text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-white">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#9B3C3C] text-white">
               <Navigation className="h-5 w-5" />
             </div>
-            <CardTitle className="text-2xl text-slate-900">Create your account</CardTitle>
-            <CardDescription className="text-slate-600">Start pairing and controlling devices in minutes</CardDescription>
+            <CardTitle className="text-2xl text-[#2D2018]">Create your account</CardTitle>
+            <CardDescription className="text-[#6B5046]">Start pairing and controlling devices in minutes</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
@@ -75,46 +75,46 @@ export function SignupPage() {
             className="space-y-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="signup-user" className="text-slate-700">Username</Label>
+              <Label htmlFor="signup-user" className="text-[#5C3D2E]">Username</Label>
               <Input
                 id="signup-user"
-                className="border-slate-300 bg-white text-slate-900 placeholder:text-slate-400"
+                className="border-[#D4B8A0] bg-white text-[#2D2018] placeholder:text-[#8A7060]"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="signup-pass" className="text-slate-700">Password</Label>
+              <Label htmlFor="signup-pass" className="text-[#5C3D2E]">Password</Label>
               <Input
                 id="signup-pass"
                 type="password"
-                className="border-slate-300 bg-white text-slate-900 placeholder:text-slate-400"
+                className="border-[#D4B8A0] bg-white text-[#2D2018] placeholder:text-[#8A7060]"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="signup-confirm" className="text-slate-700">Confirm password</Label>
+              <Label htmlFor="signup-confirm" className="text-[#5C3D2E]">Confirm password</Label>
               <Input
                 id="signup-confirm"
                 type="password"
-                className="border-slate-300 bg-white text-slate-900 placeholder:text-slate-400"
+                className="border-[#D4B8A0] bg-white text-[#2D2018] placeholder:text-[#8A7060]"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button className="w-full bg-slate-900 text-white hover:bg-slate-800" disabled={loading}>
+            <Button className="w-full bg-[#9B3C3C] text-white hover:bg-[#843333]" disabled={loading}>
               {loading ? "Creating account..." : "Create account"}
             </Button>
           </form>
 
-          <p className="mt-5 text-center text-sm text-slate-600">
+          <p className="mt-5 text-center text-sm text-[#6B5046]">
             Already have an account?{" "}
-            <Link to="/login" className="font-semibold text-slate-900 hover:underline">
+            <Link to="/login" className="font-semibold text-[#9B3C3C] hover:underline">
               Sign in
             </Link>
           </p>

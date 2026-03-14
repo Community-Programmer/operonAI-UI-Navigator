@@ -61,7 +61,7 @@ export function DashboardLayout() {
 
   return (
     <SidebarProvider>
-      <Sidebar className="border-r-0 bg-slate-950 text-slate-100">
+      <Sidebar className="border-r-0 bg-[#AE6160] text-white">
         {/* ── Brand ── */}
         <SidebarHeader className="px-5 py-4">
           <button
@@ -72,12 +72,12 @@ export function DashboardLayout() {
           </button>
         </SidebarHeader>
 
-        <Separator className="bg-slate-800/60" />
+        <Separator className="bg-white/20" />
 
         {/* ── Navigation ── */}
         <SidebarContent className="px-3 py-4">
           <SidebarGroup>
-            <SidebarGroupLabel className="mb-1 px-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+            <SidebarGroupLabel className="mb-1 px-2 text-[10px] font-bold uppercase tracking-widest text-white/60">
               Workspace
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -89,13 +89,13 @@ export function DashboardLayout() {
                       <SidebarMenuButton
                         className={`rounded-lg px-3 py-2 text-[13px] font-medium transition-all ${
                           active
-                            ? "bg-white/10 text-white shadow-sm"
-                            : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                            ? "bg-white/20 text-white shadow-sm"
+                            : "text-white/70 hover:bg-white/10 hover:text-white"
                         }`}
                         isActive={active}
                         onClick={() => navigate(item.path)}
                       >
-                        <item.icon className={`h-4 w-4 ${active ? "text-blue-400" : ""}`} />
+                        <item.icon className={`h-4 w-4 ${active ? "text-white" : ""}`} />
                         <span>{item.label}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -108,7 +108,7 @@ export function DashboardLayout() {
           {/* Control group — visible when on navigate/voice pages */}
           {activeDeviceId && (
             <SidebarGroup className="mt-4">
-              <SidebarGroupLabel className="mb-1 px-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+              <SidebarGroupLabel className="mb-1 px-2 text-[10px] font-bold uppercase tracking-widest text-white/60">
                 Control
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -123,16 +123,16 @@ export function DashboardLayout() {
                         <SidebarMenuButton
                           className={`rounded-lg px-3 py-2 text-[13px] font-medium transition-all ${
                             active
-                              ? "bg-white/10 text-white shadow-sm"
-                              : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
-                          }`}
-                          isActive={active}
-                          onClick={() => navigate(item.path)}
-                        >
-                          <item.icon className={`h-4 w-4 ${active ? "text-blue-400" : ""}`} />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
+                              ? "bg-white/20 text-white shadow-sm"
+                            : "text-white/70 hover:bg-white/10 hover:text-white"
+                        }`}
+                        isActive={active}
+                        onClick={() => navigate(item.path)}
+                      >
+                        <item.icon className={`h-4 w-4 ${active ? "text-white" : ""}`} />
+                        {item.label}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
                     );
                   })}
                 </SidebarMenu>
@@ -142,21 +142,21 @@ export function DashboardLayout() {
         </SidebarContent>
 
         {/* ── User footer ── */}
-        <SidebarFooter className="border-t border-slate-800/60 px-4 py-3">
+        <SidebarFooter className="border-t border-white/20 px-4 py-3">
           <div className="flex items-center gap-3">
             <Avatar className="h-8 w-8 shrink-0">
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-violet-600 text-[11px] font-bold text-white">
+              <AvatarFallback className="bg-[#9B3C3C] text-[11px] font-bold text-white">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-medium text-slate-200">{username ?? userId?.slice(0, 12)}</p>
-              <p className="text-[10px] text-slate-500">Online</p>
+              <p className="truncate text-xs font-medium text-white">{username ?? userId?.slice(0, 12)}</p>
+              <p className="text-[10px] text-white/60">Online</p>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 shrink-0 text-slate-500 hover:bg-white/10 hover:text-rose-400"
+              className="h-7 w-7 shrink-0 text-white/60 hover:bg-white/10 hover:text-white"
               onClick={() => { logout(); navigate("/login"); }}
             >
               <LogOut className="h-3.5 w-3.5" />
@@ -167,18 +167,18 @@ export function DashboardLayout() {
 
       <SidebarInset className="flex flex-col">
         {/* ── Top bar ── */}
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-slate-200/80 bg-white px-5">
-          <SidebarTrigger className="-ml-1 text-slate-400 hover:text-slate-900" />
-          <Separator orientation="vertical" className="h-5 bg-slate-200" />
-          <div className="flex items-center gap-1.5 text-sm text-slate-400">
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-[#E8DDD4] bg-white px-5">
+          <SidebarTrigger className="-ml-1 text-[#8A7060] hover:text-[#2D2018]" />
+          <Separator orientation="vertical" className="h-5 bg-[#E8DDD4]" />
+          <div className="flex items-center gap-1.5 text-sm text-[#8A7060]">
             <span>Dashboard</span>
             <ChevronRight className="h-3 w-3" />
-            <span className="font-semibold text-slate-900">{pageName(location.pathname)}</span>
+            <span className="font-semibold text-[#2D2018]">{pageName(location.pathname)}</span>
           </div>
         </header>
 
         {/* ── Content ── */}
-        <main className="flex-1 overflow-auto bg-white p-6">
+        <main className="flex-1 overflow-auto bg-[#FEFCFA] p-4 sm:p-6">
           <Outlet />
         </main>
       </SidebarInset>

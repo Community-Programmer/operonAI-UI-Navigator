@@ -62,10 +62,10 @@ function ScreenshotImage({
 
   if (failed) {
     return (
-      <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50">
+      <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-[#E8DDD4] bg-[#FAF5F0]">
         <div className="text-center">
-          <ImageOff className="mx-auto h-5 w-5 text-slate-300" />
-          <p className="mt-1 text-[11px] text-slate-400">Screenshot unavailable</p>
+          <ImageOff className="mx-auto h-5 w-5 text-[#D4B8A0]" />
+          <p className="mt-1 text-[11px] text-[#8A7060]">Screenshot unavailable</p>
         </div>
       </div>
     );
@@ -76,7 +76,7 @@ function ScreenshotImage({
       <img
         src={currentSrc}
         alt={alt}
-        className="w-full rounded-lg border border-slate-200 shadow-sm transition-transform hover:scale-[1.01]"
+        className="w-full rounded-lg border border-[#E8DDD4] shadow-sm transition-transform hover:scale-[1.01]"
         onError={() => {
           if (currentSrc !== fallbackSrc) setCurrentSrc(fallbackSrc);
           else setFailed(true);
@@ -114,25 +114,25 @@ function IterationCard({
             ? "bg-emerald-500 text-white"
             : hasVerification
               ? "bg-blue-500 text-white"
-              : "bg-slate-200 text-slate-600"
+              : "bg-[#E8DDD4] text-[#6B5046]"
         }`}
       >
         {iter.iteration + 1}
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-[#E8DDD4] bg-white shadow-sm">
         {/* Header */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50/60"
+          className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#FAF5F0]/60"
         >
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-800">
+              <span className="text-sm font-semibold text-[#2D2018]">
                 {isVerificationOnly ? "Verification" : `Iteration ${iter.iteration + 1}`}
               </span>
               {iter.actions.length > 0 && (
-                <span className="rounded bg-slate-100 px-1.5 py-px text-[10px] font-medium text-slate-500">
+                <span className="rounded bg-[#FAF5F0] px-1.5 py-px text-[10px] font-medium text-[#8A7060]">
                   {iter.actions.length} action{iter.actions.length !== 1 ? "s" : ""}
                 </span>
               )}
@@ -151,15 +151,15 @@ function IterationCard({
               )}
             </div>
             {iter.agent_reasoning && !isVerificationOnly && (
-              <p className="mt-0.5 truncate text-[12px] text-slate-400">
+              <p className="mt-0.5 truncate text-[12px] text-[#8A7060]">
                 {iter.agent_reasoning.slice(0, 140)}
               </p>
             )}
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 text-slate-400">
+          <div className="flex shrink-0 items-center gap-2 text-[#8A7060]">
             {iter.element_count > 0 && (
-              <span className="text-[10px] text-slate-400">{iter.element_count} elements</span>
+              <span className="text-[10px] text-[#8A7060]">{iter.element_count} elements</span>
             )}
             {expanded ? (
               <ChevronUp className="h-4 w-4" />
@@ -171,7 +171,7 @@ function IterationCard({
 
         {/* Expanded content */}
         {expanded && (
-          <div className="border-t border-slate-100 px-4 pb-4 pt-3">
+          <div className="border-t border-[#E8DDD4]/60 px-4 pb-4 pt-3">
             <div className="grid gap-4 lg:grid-cols-2">
               {/* Screenshot */}
               <div>
@@ -189,7 +189,7 @@ function IterationCard({
                 {iter.agent_reasoning && (
                   <div>
                     <SectionHeader icon={<Brain className="h-3 w-3" />} label="Agent Reasoning" />
-                    <div className="rounded-lg border border-violet-100 bg-violet-50/60 p-3 text-[12px] leading-relaxed text-slate-700">
+                    <div className="rounded-lg border border-violet-100 bg-violet-50/60 p-3 text-[12px] leading-relaxed text-[#5C3D2E]">
                       {iter.agent_reasoning}
                     </div>
                   </div>
@@ -206,7 +206,7 @@ function IterationCard({
                       {iter.actions.map((action, i) => (
                         <div
                           key={i}
-                          className="flex items-start gap-2 rounded-lg border border-slate-100 bg-slate-50 p-2.5"
+                          className="flex items-start gap-2 rounded-lg border border-[#E8DDD4]/60 bg-[#FAF5F0] p-2.5"
                         >
                           <Zap
                             className={`mt-0.5 h-3 w-3 shrink-0 ${
@@ -217,20 +217,20 @@ function IterationCard({
                           />
                           <div className="min-w-0 text-[12px]">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-mono font-semibold text-slate-800">
+                              <span className="font-mono font-semibold text-[#2D2018]">
                                 {action.action}
                               </span>
                               {action.target && (
-                                <span className="font-mono text-slate-400">
+                                <span className="font-mono text-[#8A7060]">
                                   → {action.target}
                                 </span>
                               )}
                             </div>
                             {action.reason && (
-                              <p className="mt-0.5 text-slate-500">{action.reason}</p>
+                              <p className="mt-0.5 text-[#6B5046]">{action.reason}</p>
                             )}
                             {action.message && (
-                              <p className="mt-0.5 italic text-slate-400">
+                              <p className="mt-0.5 italic text-[#8A7060]">
                                 {action.message}
                               </p>
                             )}
@@ -296,7 +296,7 @@ function IterationCard({
 /* ── Reusable section header ── */
 function SectionHeader({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <h4 className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+    <h4 className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#8A7060]">
       {icon}
       {label}
     </h4>
@@ -335,14 +335,14 @@ function VoiceIterationCard({
         {iter.iteration + 1}
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-[#E8DDD4] bg-white shadow-sm">
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50/60"
+          className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#FAF5F0]/60"
         >
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-800">
+              <span className="text-sm font-semibold text-[#2D2018]">
                 Snapshot {iter.iteration + 1}
               </span>
               {iter.actions.length > 0 && (
@@ -357,21 +357,21 @@ function VoiceIterationCard({
               )}
             </div>
             {transcriptLines.length > 0 && (
-              <p className="mt-0.5 truncate text-[12px] text-slate-400">
+              <p className="mt-0.5 truncate text-[12px] text-[#8A7060]">
                 {transcriptLines[transcriptLines.length - 1].text.slice(0, 100)}
               </p>
             )}
           </div>
-          <div className="flex shrink-0 items-center gap-2 text-slate-400">
+          <div className="flex shrink-0 items-center gap-2 text-[#8A7060]">
             {iter.element_count > 0 && (
-              <span className="text-[10px] text-slate-400">{iter.element_count} elements</span>
+              <span className="text-[10px] text-[#8A7060]">{iter.element_count} elements</span>
             )}
             {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </div>
         </button>
 
         {expanded && (
-          <div className="border-t border-slate-100 px-4 pb-4 pt-3">
+          <div className="border-t border-[#E8DDD4]/60 px-4 pb-4 pt-3">
             <div className="grid gap-4 lg:grid-cols-2">
               {/* Screenshot */}
               <div>
@@ -394,11 +394,11 @@ function VoiceIterationCard({
                           <div
                             className={`max-w-[90%] rounded-2xl px-3 py-2 text-[12px] leading-relaxed ${
                               line.role === "user"
-                                ? "rounded-br-md bg-slate-900 text-white"
-                                : "rounded-bl-md bg-violet-50 text-slate-800"
+                                ? "rounded-br-md bg-[#2D2018] text-white"
+                                : "rounded-bl-md bg-violet-50 text-[#2D2018]"
                             }`}
                           >
-                            <p className={`mb-0.5 text-[10px] font-bold ${line.role === "user" ? "text-slate-400" : "text-violet-500"}`}>
+                            <p className={`mb-0.5 text-[10px] font-bold ${line.role === "user" ? "text-[#8A7060]" : "text-violet-500"}`}>
                               {line.role === "user" ? "You" : "Agent"}
                             </p>
                             {line.text}
@@ -415,11 +415,11 @@ function VoiceIterationCard({
                     <SectionHeader icon={<MousePointerClick className="h-3 w-3" />} label={`Actions (${iter.actions.length})`} />
                     <div className="space-y-1.5">
                       {iter.actions.map((action, i) => (
-                        <div key={i} className="flex items-start gap-2 rounded-lg border border-slate-100 bg-slate-50 p-2.5">
+                        <div key={i} className="flex items-start gap-2 rounded-lg border border-[#E8DDD4]/60 bg-[#FAF5F0] p-2.5">
                           <Zap className={`mt-0.5 h-3 w-3 shrink-0 ${action.status === "success" ? "text-emerald-500" : "text-rose-500"}`} />
                           <div className="min-w-0 text-[12px]">
-                            <span className="font-mono font-semibold text-slate-800">{action.action}</span>
-                            {action.reason && <p className="mt-0.5 text-slate-500">{action.reason}</p>}
+                            <span className="font-mono font-semibold text-[#2D2018]">{action.action}</span>
+                            {action.reason && <p className="mt-0.5 text-[#6B5046]">{action.reason}</p>}
                           </div>
                         </div>
                       ))}
@@ -470,26 +470,26 @@ function VoiceSessionDetailView({
       <div>
         <button
           onClick={() => navigate("/app/sessions")}
-          className="mb-3 flex items-center gap-1 text-sm text-slate-400 transition-colors hover:text-slate-700"
+          className="mb-3 flex items-center gap-1 text-sm text-[#8A7060] transition-colors hover:text-[#2D2018]"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Sessions
         </button>
 
-        <div className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <div className="flex items-start justify-between gap-4 rounded-xl border border-[#E8DDD4] bg-white px-5 py-4 shadow-sm">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <Mic className="h-5 w-5 text-violet-500" />
-              <h1 className="text-lg font-bold text-slate-900">{session.goal}</h1>
+              <h1 className="text-lg font-bold text-[#2D2018]">{session.goal}</h1>
               <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-violet-600">
                 Voice
               </span>
             </div>
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
-              <span className="font-medium text-slate-700">{session.device_name}</span>
-              <span className="text-slate-300">|</span>
-              <span className="font-mono text-[11px] text-slate-400">{session.device_id}</span>
-              <span className="text-slate-300">|</span>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#6B5046]">
+              <span className="font-medium text-[#2D2018]">{session.device_name}</span>
+              <span className="text-[#D4B8A0]">|</span>
+              <span className="font-mono text-[11px] text-[#8A7060]">{session.device_id}</span>
+              <span className="text-[#D4B8A0]">|</span>
               <span>{new Date(session.started_at).toLocaleString()}</span>
             </div>
           </div>
@@ -503,28 +503,28 @@ function VoiceSessionDetailView({
       {/* Stats — voice-appropriate */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: "Duration", value: formatDuration(session.duration_seconds), icon: <Clock className="h-3.5 w-3.5 text-slate-400" /> },
-          { label: "Snapshots", value: session.total_iterations.toString(), icon: <Camera className="h-3.5 w-3.5 text-slate-400" /> },
-          { label: "Messages", value: allTranscript.length.toString(), icon: <MessageSquare className="h-3.5 w-3.5 text-slate-400" /> },
-          { label: "Actions", value: totalActions.toString(), icon: <Zap className="h-3.5 w-3.5 text-slate-400" /> },
+          { label: "Duration", value: formatDuration(session.duration_seconds), icon: <Clock className="h-3.5 w-3.5 text-[#8A7060]" /> },
+          { label: "Snapshots", value: session.total_iterations.toString(), icon: <Camera className="h-3.5 w-3.5 text-[#8A7060]" /> },
+          { label: "Messages", value: allTranscript.length.toString(), icon: <MessageSquare className="h-3.5 w-3.5 text-[#8A7060]" /> },
+          { label: "Actions", value: totalActions.toString(), icon: <Zap className="h-3.5 w-3.5 text-[#8A7060]" /> },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div key={stat.label} className="rounded-lg border border-[#E8DDD4] bg-white px-4 py-3 shadow-sm">
             <div className="flex items-center gap-1.5">
               {stat.icon}
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{stat.label}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A7060]">{stat.label}</span>
             </div>
-            <p className="mt-1.5 text-xl font-bold tabular-nums text-slate-900">{stat.value}</p>
+            <p className="mt-1.5 text-xl font-bold tabular-nums text-[#2D2018]">{stat.value}</p>
           </div>
         ))}
       </div>
 
       {/* Conversation Summary */}
       {allTranscript.length > 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-3">
+        <div className="rounded-xl border border-[#E8DDD4] bg-white shadow-sm">
+          <div className="flex items-center gap-2 border-b border-[#E8DDD4]/60 px-5 py-3">
             <MessageSquare className="h-4 w-4 text-violet-500" />
-            <h2 className="text-sm font-semibold text-slate-800">Conversation</h2>
-            <span className="ml-auto text-[11px] font-medium text-slate-400">
+            <h2 className="text-sm font-semibold text-[#2D2018]">Conversation</h2>
+            <span className="ml-auto text-[11px] font-medium text-[#8A7060]">
               {allTranscript.length} messages
             </span>
           </div>
@@ -534,11 +534,11 @@ function VoiceSessionDetailView({
                 <div
                   className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-[12px] leading-relaxed ${
                     line.role === "user"
-                      ? "rounded-br-md bg-slate-900 text-white"
-                      : "rounded-bl-md bg-violet-50 text-slate-800"
+                      ? "rounded-br-md bg-[#2D2018] text-white"
+                      : "rounded-bl-md bg-violet-50 text-[#2D2018]"
                   }`}
                 >
-                  <p className={`mb-0.5 text-[10px] font-bold ${line.role === "user" ? "text-slate-400" : "text-violet-500"}`}>
+                  <p className={`mb-0.5 text-[10px] font-bold ${line.role === "user" ? "text-[#8A7060]" : "text-violet-500"}`}>
                     {line.role === "user" ? "You" : "Agent"}
                   </p>
                   {line.text}
@@ -551,22 +551,22 @@ function VoiceSessionDetailView({
 
       {/* Iteration Timeline */}
       <div>
-        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-800">
-          <Camera className="h-4 w-4 text-slate-400" />
+        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#2D2018]">
+          <Camera className="h-4 w-4 text-[#8A7060]" />
           Activity Timeline
-          <span className="ml-1 rounded bg-slate-100 px-1.5 py-px text-[10px] font-bold text-slate-500">
+          <span className="ml-1 rounded bg-[#FAF5F0] px-1.5 py-px text-[10px] font-bold text-[#8A7060]">
             {session.iterations.length}
           </span>
         </h2>
 
         {session.iterations.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white py-12">
-            <Camera className="h-6 w-6 text-slate-300" />
-            <p className="mt-2 text-sm text-slate-400">No snapshots recorded</p>
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[#E8DDD4] bg-white py-12">
+            <Camera className="h-6 w-6 text-[#D4B8A0]" />
+            <p className="mt-2 text-sm text-[#8A7060]">No snapshots recorded</p>
           </div>
         ) : (
           <div className="relative space-y-3">
-            <div className="absolute bottom-0 left-[0.55rem] top-0 w-px bg-slate-200" />
+            <div className="absolute bottom-0 left-[0.55rem] top-0 w-px bg-[#E8DDD4]" />
             {session.iterations.map((iter, i) => (
               <VoiceIterationCard
                 key={`${iter.iteration}-${i}`}
@@ -604,8 +604,8 @@ export function SessionDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
-        <span className="ml-2 text-sm text-slate-500">Loading session…</span>
+        <Loader2 className="h-5 w-5 animate-spin text-[#8A7060]" />
+        <span className="ml-2 text-sm text-[#6B5046]">Loading session…</span>
       </div>
     );
   }
@@ -617,7 +617,7 @@ export function SessionDetailPage() {
         <p className="mt-3 text-sm text-rose-600">{error || "Session not found"}</p>
         <button
           onClick={() => navigate("/app/sessions")}
-          className="mt-4 text-sm text-blue-600 hover:underline"
+          className="mt-4 text-sm text-[#9B3C3C] hover:underline"
         >
           Back to sessions
         </button>
@@ -655,29 +655,29 @@ export function SessionDetailPage() {
       <div>
         <button
           onClick={() => navigate("/app/sessions")}
-          className="mb-3 flex items-center gap-1 text-sm text-slate-400 transition-colors hover:text-slate-700"
+          className="mb-3 flex items-center gap-1 text-sm text-[#8A7060] transition-colors hover:text-[#2D2018]"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Sessions
         </button>
 
-        <div className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <div className="flex items-start justify-between gap-4 rounded-xl border border-[#E8DDD4] bg-white px-5 py-4 shadow-sm">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-slate-900">{session.goal}</h1>
+              <h1 className="text-lg font-bold text-[#2D2018]">{session.goal}</h1>
               {session.mode === "voice" && (
                 <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-violet-600">
                   Voice
                 </span>
               )}
             </div>
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
-              <span className="font-medium text-slate-700">{session.device_name}</span>
-              <span className="text-slate-300">|</span>
-              <span className="font-mono text-[11px] text-slate-400">
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#6B5046]">
+              <span className="font-medium text-[#2D2018]">{session.device_name}</span>
+              <span className="text-[#D4B8A0]">|</span>
+              <span className="font-mono text-[11px] text-[#8A7060]">
                 {session.device_id}
               </span>
-              <span className="text-slate-300">|</span>
+              <span className="text-[#D4B8A0]">|</span>
               <span>{new Date(session.started_at).toLocaleString()}</span>
             </div>
           </div>
@@ -699,35 +699,35 @@ export function SessionDetailPage() {
           {
             label: "Duration",
             value: formatDuration(session.duration_seconds),
-            icon: <Clock className="h-3.5 w-3.5 text-slate-400" />,
+            icon: <Clock className="h-3.5 w-3.5 text-[#8A7060]" />,
           },
           {
             label: "Iterations",
             value: session.total_iterations.toString(),
-            icon: <Zap className="h-3.5 w-3.5 text-slate-400" />,
+            icon: <Zap className="h-3.5 w-3.5 text-[#8A7060]" />,
           },
           {
             label: "Progress",
             value: `${session.final_verification?.progress_percent ?? 0}%`,
-            icon: <Crosshair className="h-3.5 w-3.5 text-slate-400" />,
+            icon: <Crosshair className="h-3.5 w-3.5 text-[#8A7060]" />,
           },
           {
             label: "Plan Steps",
             value: session.plan?.total_steps.toString() ?? "0",
-            icon: <ListChecks className="h-3.5 w-3.5 text-slate-400" />,
+            icon: <ListChecks className="h-3.5 w-3.5 text-[#8A7060]" />,
           },
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm"
+            className="rounded-lg border border-[#E8DDD4] bg-white px-4 py-3 shadow-sm"
           >
             <div className="flex items-center gap-1.5">
               {stat.icon}
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A7060]">
                 {stat.label}
               </span>
             </div>
-            <p className="mt-1.5 text-xl font-bold tabular-nums text-slate-900">
+            <p className="mt-1.5 text-xl font-bold tabular-nums text-[#2D2018]">
               {stat.value}
             </p>
           </div>
@@ -736,33 +736,33 @@ export function SessionDetailPage() {
 
       {/* Plan */}
       {session.plan && (
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
+        <div className="rounded-xl border border-[#E8DDD4] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#E8DDD4]/60 px-5 py-3">
             <div className="flex items-center gap-2">
-              <ListChecks className="h-4 w-4 text-blue-500" />
-              <h2 className="text-sm font-semibold text-slate-800">Execution Plan</h2>
+              <ListChecks className="h-4 w-4 text-[#9B3C3C]" />
+              <h2 className="text-sm font-semibold text-[#2D2018]">Execution Plan</h2>
             </div>
-            <span className="text-[11px] font-medium text-slate-400">
+            <span className="text-[11px] font-medium text-[#8A7060]">
               {session.plan.total_steps} steps
             </span>
           </div>
 
           {session.plan.reasoning && (
-            <p className="border-b border-slate-50 px-5 py-2.5 text-xs italic text-slate-500">
+            <p className="border-b border-[#FAF5F0] px-5 py-2.5 text-xs italic text-[#6B5046]">
               {session.plan.reasoning}
             </p>
           )}
 
-          <div className="divide-y divide-slate-50 px-5">
+          <div className="divide-y divide-[#FAF5F0] px-5">
             {session.plan.steps.map((step) => (
               <div key={step.step_number} className="flex items-start gap-3 py-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[11px] font-bold text-blue-600">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#FAF5F0] text-[11px] font-bold text-[#9B3C3C]">
                   {step.step_number}
                 </span>
                 <div className="min-w-0 text-[12px]">
-                  <p className="font-medium text-slate-800">{step.description}</p>
+                  <p className="font-medium text-[#2D2018]">{step.description}</p>
                   {step.expected_state && (
-                    <p className="mt-0.5 text-slate-400">
+                    <p className="mt-0.5 text-[#8A7060]">
                       Expected: {step.expected_state}
                     </p>
                   )}
@@ -842,23 +842,23 @@ export function SessionDetailPage() {
 
       {/* Iteration Timeline */}
       <div>
-        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-800">
-          <Clock className="h-4 w-4 text-slate-400" />
+        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#2D2018]">
+          <Clock className="h-4 w-4 text-[#8A7060]" />
           Iteration Timeline
-          <span className="ml-1 rounded bg-slate-100 px-1.5 py-px text-[10px] font-bold text-slate-500">
+          <span className="ml-1 rounded bg-[#FAF5F0] px-1.5 py-px text-[10px] font-bold text-[#8A7060]">
             {session.iterations.length}
           </span>
         </h2>
 
         {session.iterations.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white py-12">
-            <Clock className="h-6 w-6 text-slate-300" />
-            <p className="mt-2 text-sm text-slate-400">No iterations recorded</p>
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[#E8DDD4] bg-white py-12">
+            <Clock className="h-6 w-6 text-[#D4B8A0]" />
+            <p className="mt-2 text-sm text-[#8A7060]">No iterations recorded</p>
           </div>
         ) : (
           <div className="relative space-y-3">
             {/* Timeline line */}
-            <div className="absolute bottom-0 left-[0.55rem] top-0 w-px bg-slate-200" />
+            <div className="absolute bottom-0 left-[0.55rem] top-0 w-px bg-[#E8DDD4]" />
 
             {session.iterations.map((iter, i) => (
               <IterationCard

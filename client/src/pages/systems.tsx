@@ -107,8 +107,8 @@ export function SystemsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Active Systems</h1>
-          <p className="mt-1 text-sm text-slate-500">Real-time overview of connected desktops</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[#2D2018]">Active Systems</h1>
+          <p className="mt-1 text-sm text-[#6B5046]">Real-time overview of connected desktops</p>
         </div>
         <Button
           variant="outline"
@@ -124,12 +124,12 @@ export function SystemsPage() {
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-slate-200 bg-white shadow-sm">
+        <Card className="border-[#E8DDD4] bg-white shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Online</p>
-                <p className="mt-1 text-3xl font-bold text-slate-900">{onlineCount}</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-[#8A7060]">Online</p>
+                <p className="mt-1 text-3xl font-bold text-[#2D2018]">{onlineCount}</p>
               </div>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
                 <Wifi className="h-5 w-5 text-emerald-600" />
@@ -145,48 +145,48 @@ export function SystemsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 bg-white shadow-sm">
+        <Card className="border-[#E8DDD4] bg-white shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Total Tracked</p>
-                <p className="mt-1 text-3xl font-bold text-slate-900">{systems.length}</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-[#8A7060]">Total Tracked</p>
+                <p className="mt-1 text-3xl font-bold text-[#2D2018]">{systems.length}</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
-                <MonitorSmartphone className="h-5 w-5 text-blue-600" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FAF5F0]">
+                <MonitorSmartphone className="h-5 w-5 text-[#9B3C3C]" />
               </div>
             </div>
-            <p className="mt-3 text-xs text-slate-400">Registered systems</p>
+            <p className="mt-3 text-xs text-[#8A7060]">Registered systems</p>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 bg-white shadow-sm">
+        <Card className="border-[#E8DDD4] bg-white shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Active Sessions</p>
-                <p className="mt-1 text-3xl font-bold text-slate-900">{activeCount}</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-[#8A7060]">Active Sessions</p>
+                <p className="mt-1 text-3xl font-bold text-[#2D2018]">{activeCount}</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50">
-                <Zap className="h-5 w-5 text-violet-600" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FAF5F0]">
+                <Zap className="h-5 w-5 text-[#B07060]" />
               </div>
             </div>
-            <p className="mt-3 text-xs text-slate-400">Non-expired sessions</p>
+            <p className="mt-3 text-xs text-[#8A7060]">Non-expired sessions</p>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 bg-white shadow-sm">
+        <Card className="border-[#E8DDD4] bg-white shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Expired</p>
-                <p className="mt-1 text-3xl font-bold text-slate-900">{expiredCount}</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-[#8A7060]">Expired</p>
+                <p className="mt-1 text-3xl font-bold text-[#2D2018]">{expiredCount}</p>
               </div>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50">
                 <Clock3 className="h-5 w-5 text-amber-600" />
               </div>
             </div>
-            <p className="mt-3 text-xs text-slate-400">Need renewal</p>
+            <p className="mt-3 text-xs text-[#8A7060]">Need renewal</p>
           </CardContent>
         </Card>
       </div>
@@ -194,10 +194,10 @@ export function SystemsPage() {
       {/* Charts Row */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Online History Chart */}
-        <Card className="border-slate-200 bg-white shadow-sm">
+        <Card className="border-[#E8DDD4] bg-white shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-700">Online Systems History</CardTitle>
-            <CardDescription className="text-xs text-slate-400">Live connection count over time</CardDescription>
+            <CardTitle className="text-sm font-semibold text-[#2D2018]">Online Systems History</CardTitle>
+            <CardDescription className="text-xs text-[#8A7060]">Live connection count over time</CardDescription>
           </CardHeader>
           <CardContent className="pb-4">
             {history.length > 1 ? (
@@ -209,10 +209,10 @@ export function SystemsPage() {
                       <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="time" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={30} />
+                  <XAxis dataKey="time" tick={{ fontSize: 10, fill: "#8A7060" }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: "#8A7060" }} axisLine={false} tickLine={false} width={30} />
                   <Tooltip
-                    contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
+                    contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #E8DDD4" }}
                   />
                   <Area
                     type="monotone"
@@ -225,7 +225,7 @@ export function SystemsPage() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[200px] items-center justify-center text-sm text-slate-400">
+              <div className="flex h-[200px] items-center justify-center text-sm text-[#8A7060]">
                 <Signal className="mr-2 h-4 w-4" />
                 Collecting data...
               </div>
@@ -234,10 +234,10 @@ export function SystemsPage() {
         </Card>
 
         {/* Resolution Distribution */}
-        <Card className="border-slate-200 bg-white shadow-sm">
+        <Card className="border-[#E8DDD4] bg-white shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-700">Screen Resolutions</CardTitle>
-            <CardDescription className="text-xs text-slate-400">Distribution across online systems</CardDescription>
+            <CardTitle className="text-sm font-semibold text-[#2D2018]">Screen Resolutions</CardTitle>
+            <CardDescription className="text-xs text-[#8A7060]">Distribution across online systems</CardDescription>
           </CardHeader>
           <CardContent className="pb-4">
             {resolutionChartData.length > 0 ? (
@@ -258,7 +258,7 @@ export function SystemsPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }}
+                      contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #E8DDD4" }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -269,14 +269,14 @@ export function SystemsPage() {
                         className="h-3 w-3 rounded-full"
                         style={{ backgroundColor: pieColors[i % pieColors.length] }}
                       />
-                      <span className="text-xs text-slate-600">{item.name}</span>
-                      <span className="ml-auto text-xs font-semibold text-slate-900">{item.value}</span>
+                      <span className="text-xs text-[#6B5046]">{item.name}</span>
+                      <span className="ml-auto text-xs font-semibold text-[#2D2018]">{item.value}</span>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="flex h-[200px] items-center justify-center text-sm text-slate-400">
+              <div className="flex h-[200px] items-center justify-center text-sm text-[#8A7060]">
                 <Monitor className="mr-2 h-4 w-4" />
                 No systems online
               </div>
@@ -287,14 +287,14 @@ export function SystemsPage() {
 
       {/* Systems Grid */}
       <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#8A7060]">
           Connected Devices ({systems.length})
         </h2>
         <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
           {systems.length === 0 && (
-            <Card className="border-slate-200 bg-white shadow-sm lg:col-span-2 xl:col-span-3">
-              <CardContent className="flex flex-col items-center justify-center py-16 text-slate-400">
-                <Activity className="mb-3 h-12 w-12 text-slate-200" />
+            <Card className="border-[#E8DDD4] bg-white shadow-sm lg:col-span-2 xl:col-span-3">
+              <CardContent className="flex flex-col items-center justify-center py-16 text-[#8A7060]">
+                <Activity className="mb-3 h-12 w-12 text-[#D4B8A0]" />
                 <p className="text-sm font-medium">No active systems right now</p>
                 <p className="mt-1 text-xs">Devices will appear here once they connect</p>
               </CardContent>
@@ -307,7 +307,7 @@ export function SystemsPage() {
               <Card
                 key={system.device_id}
                 className={`group cursor-pointer border bg-white shadow-sm transition-all hover:shadow-md ${
-                  expired ? "border-amber-200 hover:border-amber-300" : "border-slate-200 hover:border-blue-200"
+                  expired ? "border-amber-200 hover:border-amber-300" : "border-[#E8DDD4] hover:border-[#C9A48C]"
                 }`}
                 onClick={() => navigate(`/app/navigate/${system.device_id}`)}
               >
@@ -320,10 +320,10 @@ export function SystemsPage() {
                         <Monitor className={`h-5 w-5 ${expired ? "text-amber-600" : "text-emerald-600"}`} />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                        <p className="text-sm font-semibold text-[#2D2018] group-hover:text-[#9B3C3C] transition-colors">
                           {system.device_name}
                         </p>
-                        <p className="text-[11px] font-mono text-slate-400">{system.device_id}</p>
+                        <p className="text-[11px] font-mono text-[#8A7060]">{system.device_id}</p>
                       </div>
                     </div>
                     <Badge className={expired
@@ -335,19 +335,19 @@ export function SystemsPage() {
                   </div>
 
                   <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="rounded-lg bg-slate-50 px-3 py-2">
-                      <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Resolution</p>
-                      <p className="mt-0.5 text-xs font-semibold text-slate-700">
+                    <div className="rounded-lg bg-[#FAF5F0] px-3 py-2">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-[#8A7060]">Resolution</p>
+                      <p className="mt-0.5 text-xs font-semibold text-[#2D2018]">
                         {system.screen_width > 0 ? `${system.screen_width}×${system.screen_height}` : "N/A"}
                       </p>
                     </div>
-                    <div className="rounded-lg bg-slate-50 px-3 py-2">
-                      <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Last Seen</p>
-                      <p className="mt-0.5 text-xs font-semibold text-slate-700">{timeAgo(system.last_seen_at)}</p>
+                    <div className="rounded-lg bg-[#FAF5F0] px-3 py-2">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-[#8A7060]">Last Seen</p>
+                      <p className="mt-0.5 text-xs font-semibold text-[#2D2018]">{timeAgo(system.last_seen_at)}</p>
                     </div>
                   </div>
 
-                  <div className="mt-3 flex items-center gap-1.5 text-[11px] text-slate-400">
+                  <div className="mt-3 flex items-center gap-1.5 text-[11px] text-[#8A7060]">
                     <Clock3 className="h-3 w-3" />
                     <span>Expires {formatDate(system.session_expires_at)}</span>
                   </div>

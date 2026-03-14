@@ -82,20 +82,20 @@ export function NavigatePage() {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col gap-3">
       {/* ── Top bar ── */}
-      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+      <div className="flex items-center justify-between rounded-xl border border-[#E8DDD4] bg-white px-4 py-2.5 shadow-sm">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-500 hover:text-slate-900"
+            className="h-8 w-8 text-[#6B5046] hover:text-[#2D2018]"
             onClick={() => navigate("/app/devices")}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <Separator orientation="vertical" className="h-6 bg-slate-200" />
+          <Separator orientation="vertical" className="h-6 bg-[#E8DDD4]" />
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-sm font-semibold text-slate-900">Navigate</h1>
+              <h1 className="text-sm font-semibold text-[#2D2018]">Navigate</h1>
               <Badge
                 variant="outline"
                 className={`text-[10px] ${
@@ -111,7 +111,7 @@ export function NavigatePage() {
                 )}
               </Badge>
             </div>
-            <p className="mt-0.5 font-mono text-[11px] text-slate-400">{deviceId}</p>
+            <p className="mt-0.5 font-mono text-[11px] text-[#8A7060]">{deviceId}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -129,7 +129,7 @@ export function NavigatePage() {
           <Button
             variant="outline"
             size="sm"
-            className="h-8 gap-1.5 border-slate-200 text-xs"
+            className="h-8 gap-1.5 border-[#E8DDD4] text-xs"
             onClick={() => navigate(`/app/voice/${deviceId}`)}
           >
             <Mic className="h-3.5 w-3.5" />
@@ -141,9 +141,9 @@ export function NavigatePage() {
       {/* ── Main layout ── */}
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1fr_420px]">
         {/* Left: screenshot */}
-        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Live View</span>
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-[#E8DDD4] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#E8DDD4]/60 px-4 py-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#8A7060]">Live View</span>
             {taskRunning && (
               <span className="flex items-center gap-1.5 text-[10px] font-medium text-blue-600">
                 <span className="relative flex h-1.5 w-1.5">
@@ -154,7 +154,7 @@ export function NavigatePage() {
               </span>
             )}
           </div>
-          <div className="flex flex-1 items-center justify-center bg-slate-950 p-2">
+          <div className="flex flex-1 items-center justify-center bg-[#2D2018] p-2">
             {screenshot ? (
               <img
                 src={`data:image/jpeg;base64,${screenshot}`}
@@ -162,7 +162,7 @@ export function NavigatePage() {
                 className="max-h-full max-w-full rounded object-contain"
               />
             ) : (
-              <div className="flex flex-col items-center gap-2 text-slate-500">
+              <div className="flex flex-col items-center gap-2 text-[#8A7060]">
                 <ImageOff className="h-8 w-8 opacity-40" />
                 <p className="text-xs">Waiting for screenshot…</p>
               </div>
@@ -171,17 +171,17 @@ export function NavigatePage() {
         </div>
 
         {/* Right: tabbed execution panel */}
-        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-[#E8DDD4] bg-white shadow-sm">
           {/* Tabs */}
-          <div className="flex shrink-0 border-b border-slate-100">
+          <div className="flex shrink-0 border-b border-[#E8DDD4]/60">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`relative flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${
                   activeTab === tab.key
-                    ? "text-slate-900"
-                    : "text-slate-400 hover:text-slate-600"
+                    ? "text-[#2D2018]"
+                    : "text-[#8A7060] hover:text-[#5C3D2E]"
                 }`}
               >
                 {tab.label}
@@ -189,15 +189,15 @@ export function NavigatePage() {
                   <span
                     className={`rounded-full px-1.5 py-px text-[9px] font-bold ${
                       activeTab === tab.key
-                        ? "bg-slate-900 text-white"
-                        : "bg-slate-100 text-slate-500"
+                        ? "bg-[#9B3C3C] text-white"
+                        : "bg-[#FAF5F0] text-[#8A7060]"
                     }`}
                   >
                     {tab.count}
                   </span>
                 )}
                 {activeTab === tab.key && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-900" />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9B3C3C]" />
                 )}
               </button>
             ))}
@@ -222,7 +222,7 @@ export function NavigatePage() {
                             Thought {i + 1}
                           </span>
                         </div>
-                        <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-slate-700">
+                        <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-[#5C3D2E]">
                           {log.message}
                         </p>
                       </div>
@@ -242,7 +242,7 @@ export function NavigatePage() {
                         <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600">
                           {i + 1}
                         </div>
-                        <span className="min-w-0 flex-1 whitespace-pre-wrap break-words font-mono text-[12px] leading-relaxed text-slate-700">
+                        <span className="min-w-0 flex-1 whitespace-pre-wrap break-words font-mono text-[12px] leading-relaxed text-[#5C3D2E]">
                           {log.message}
                         </span>
                       </div>
@@ -269,10 +269,10 @@ export function NavigatePage() {
 
           {/* Footer */}
           {logs.length > 0 && (
-            <div className="shrink-0 border-t border-slate-100 px-3 py-1.5">
+            <div className="shrink-0 border-t border-[#E8DDD4]/60 px-3 py-1.5">
               <button
                 onClick={clearLogs}
-                className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-600"
+                className="flex items-center gap-1 text-[10px] text-[#8A7060] hover:text-[#5C3D2E]"
               >
                 <Trash2 className="h-3 w-3" />
                 Clear all
@@ -283,7 +283,7 @@ export function NavigatePage() {
       </div>
 
       {/* ── Input bar ── */}
-      <div className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+      <div className="rounded-xl border border-[#E8DDD4] bg-white px-4 py-2.5 shadow-sm">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -299,7 +299,7 @@ export function NavigatePage() {
                   ? "Describe what you want the agent to do…"
                   : "Waiting for connection…"
             }
-            className="border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white"
+            className="border-[#E8DDD4] bg-[#FAF5F0] text-sm text-[#2D2018] placeholder:text-[#8A7060] focus:bg-white"
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
             disabled={taskRunning || !connected}
@@ -307,7 +307,7 @@ export function NavigatePage() {
           <Button
             type="submit"
             size="sm"
-            className="h-9 gap-1.5 bg-slate-900 px-4 text-white hover:bg-slate-800"
+            className="h-9 gap-1.5 bg-[#9B3C3C] px-4 text-white hover:bg-[#843333]"
             disabled={taskRunning || !connected || !goal.trim()}
           >
             {taskRunning ? (
@@ -328,9 +328,9 @@ export function NavigatePage() {
 /* ── Empty state ── */
 function EmptyState({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-slate-300">
+    <div className="flex flex-col items-center justify-center py-12 text-[#D4B8A0]">
       {icon}
-      <p className="mt-2 text-xs text-slate-400">{text}</p>
+      <p className="mt-2 text-xs text-[#8A7060]">{text}</p>
     </div>
   );
 }
@@ -344,7 +344,7 @@ function LogItem({ log }: { log: LogEntry }) {
     warning: { icon: <OctagonX className="h-3 w-3 text-amber-500" />, bg: "bg-amber-50" },
     done: { icon: <CheckCircle2 className="h-3 w-3 text-emerald-500" />, bg: "bg-emerald-50" },
     agent_response: { icon: <Zap className="h-3 w-3 text-blue-500" />, bg: "bg-blue-50/50" },
-    status: { icon: <Circle className="h-3 w-3 text-slate-400" />, bg: "" },
+    status: { icon: <Circle className="h-3 w-3 text-[#8A7060]" />, bg: "" },
   };
 
   const style = styles[log.type] ?? styles.status;
@@ -352,7 +352,7 @@ function LogItem({ log }: { log: LogEntry }) {
   return (
     <div className={`flex items-start gap-2 rounded-md px-2.5 py-1.5 text-[11px] ${style.bg}`}>
       <span className="mt-0.5 shrink-0">{style.icon}</span>
-      <span className="min-w-0 flex-1 whitespace-pre-wrap break-words leading-relaxed text-slate-700">
+      <span className="min-w-0 flex-1 whitespace-pre-wrap break-words leading-relaxed text-[#5C3D2E]">
         {log.message}
       </span>
     </div>
@@ -372,9 +372,9 @@ function PlanContent({
   if (!plan && !taskRunning) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <ListChecks className="h-8 w-8 text-slate-300" />
-        <p className="mt-3 text-xs font-medium text-slate-500">No active plan</p>
-        <p className="mt-1 text-[11px] text-slate-400">
+        <ListChecks className="h-8 w-8 text-[#D4B8A0]" />
+        <p className="mt-3 text-xs font-medium text-[#6B5046]">No active plan</p>
+        <p className="mt-1 text-[11px] text-[#8A7060]">
           Submit a goal to see the step-by-step plan
         </p>
       </div>
@@ -386,8 +386,8 @@ function PlanContent({
       <div className="flex items-center gap-3 p-4">
         <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
         <div>
-          <p className="text-xs font-semibold text-slate-700">Planning…</p>
-          <p className="text-[11px] text-slate-400">Analyzing your request</p>
+          <p className="text-xs font-semibold text-[#2D2018]">Planning…</p>
+          <p className="text-[11px] text-[#8A7060]">Analyzing your request</p>
         </div>
       </div>
     );
@@ -404,8 +404,8 @@ function PlanContent({
   return (
     <div>
       {/* Progress header */}
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
-        <span className="text-[11px] font-medium text-slate-500">
+      <div className="flex items-center justify-between border-b border-[#E8DDD4]/60 px-4 py-2.5">
+        <span className="text-[11px] font-medium text-[#6B5046]">
           {completedCount}/{plan.steps.length} steps completed
         </span>
         <div className="flex items-center gap-2">
@@ -428,7 +428,7 @@ function PlanContent({
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 bg-slate-100">
+      <div className="h-1 bg-[#FAF5F0]">
         <div
           className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-500"
           style={{ width: `${progress}%` }}
@@ -444,10 +444,10 @@ function PlanContent({
               key={step.step_number}
               className={`flex items-start gap-2.5 rounded-lg px-3 py-2.5 text-[12px] transition-colors ${
                 step.completed
-                  ? "text-slate-400"
+                  ? "text-[#8A7060]"
                   : isCurrent
-                    ? "bg-blue-50/80 text-slate-800"
-                    : "text-slate-500"
+                    ? "bg-[#FAF5F0] text-[#2D2018]"
+                    : "text-[#6B5046]"
               }`}
             >
               {step.completed ? (
@@ -455,7 +455,7 @@ function PlanContent({
               ) : isCurrent ? (
                 <PlayCircle className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
               ) : (
-                <Circle className="mt-0.5 h-4 w-4 shrink-0 text-slate-300" />
+                <Circle className="mt-0.5 h-4 w-4 shrink-0 text-[#D4B8A0]" />
               )}
               <div className="min-w-0 flex-1">
                 <span className={step.completed ? "line-through" : "font-medium"}>
@@ -469,9 +469,9 @@ function PlanContent({
 
       {/* Verification reasoning */}
       {verification?.reasoning && (
-        <div className="border-t border-slate-100 px-4 py-3">
-          <p className="text-[11px] leading-relaxed text-slate-500">
-            <span className="font-semibold text-slate-600">Verification: </span>
+        <div className="border-t border-[#E8DDD4]/60 px-4 py-3">
+          <p className="text-[11px] leading-relaxed text-[#6B5046]">
+            <span className="font-semibold text-[#5C3D2E]">Verification: </span>
             {verification.reasoning}
           </p>
         </div>

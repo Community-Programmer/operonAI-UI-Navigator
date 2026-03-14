@@ -197,8 +197,8 @@ export function DevicesPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Device Management</h1>
-          <p className="mt-1 text-sm text-slate-500">Manage, pair, and monitor your connected systems</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[#2D2018]">Device Management</h1>
+          <p className="mt-1 text-sm text-[#6B5046]">Manage, pair, and monitor your connected systems</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -213,7 +213,7 @@ export function DevicesPage() {
           </Button>
           <Button
             size="sm"
-            className="gap-2 bg-slate-900 text-white hover:bg-slate-800"
+            className="gap-2 bg-[#9B3C3C] text-white hover:bg-[#843333]"
             onClick={() => setShowPairModal(true)}
           >
             <Plus className="h-3.5 w-3.5" />
@@ -224,25 +224,25 @@ export function DevicesPage() {
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-slate-200 bg-white shadow-sm">
+        <Card className="border-[#E8DDD4] bg-white shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Total</p>
-                <p className="mt-1 text-3xl font-bold text-slate-900">{devices.length}</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-[#8A7060]">Total</p>
+                <p className="mt-1 text-3xl font-bold text-[#2D2018]">{devices.length}</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
-                <Monitor className="h-5 w-5 text-blue-600" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FAF5F0]">
+                <Monitor className="h-5 w-5 text-[#9B3C3C]" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 bg-white shadow-sm">
+        <Card className="border-[#E8DDD4] bg-white shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Online</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-[#8A7060]">Online</p>
                 <p className="mt-1 text-3xl font-bold text-emerald-600">{onlineCount}</p>
               </div>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
@@ -252,25 +252,25 @@ export function DevicesPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 bg-white shadow-sm">
+        <Card className="border-[#E8DDD4] bg-white shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Offline</p>
-                <p className="mt-1 text-3xl font-bold text-slate-400">{offlineCount}</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-[#8A7060]">Offline</p>
+                <p className="mt-1 text-3xl font-bold text-[#8A7060]">{offlineCount}</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-                <WifiOff className="h-5 w-5 text-slate-400" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FAF5F0]">
+                <WifiOff className="h-5 w-5 text-[#8A7060]" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 bg-white shadow-sm">
+        <Card className="border-[#E8DDD4] bg-white shadow-sm">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Expired</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-[#8A7060]">Expired</p>
                 <p className="mt-1 text-3xl font-bold text-amber-600">{expiredCount}</p>
               </div>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50">
@@ -284,10 +284,10 @@ export function DevicesPage() {
       {/* Charts */}
       {devices.length > 0 && (
         <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="border-slate-200 bg-white shadow-sm">
+          <Card className="border-[#E8DDD4] bg-white shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold text-slate-700">Device Status</CardTitle>
-              <CardDescription className="text-xs text-slate-400">Online vs offline distribution</CardDescription>
+              <CardTitle className="text-sm font-semibold text-[#2D2018]">Device Status</CardTitle>
+              <CardDescription className="text-xs text-[#8A7060]">Online vs offline distribution</CardDescription>
             </CardHeader>
             <CardContent className="pb-4">
               <div className="flex items-center gap-6">
@@ -306,19 +306,19 @@ export function DevicesPage() {
                         <Cell key={i} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }} />
+                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #E8DDD4" }} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="flex-1 space-y-3">
                   {statusData.map((item) => (
                     <div key={item.name} className="flex items-center gap-3">
                       <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span className="text-sm text-slate-600">{item.name}</span>
-                      <span className="ml-auto text-sm font-bold text-slate-900">{item.value}</span>
+                      <span className="text-sm text-[#6B5046]">{item.name}</span>
+                      <span className="ml-auto text-sm font-bold text-[#2D2018]">{item.value}</span>
                     </div>
                   ))}
-                  <div className="pt-2 border-t border-slate-100">
-                    <p className="text-xs text-slate-400">
+                  <div className="pt-2 border-t border-[#E8DDD4]">
+                    <p className="text-xs text-[#8A7060]">
                       {devices.length > 0
                         ? `${Math.round((onlineCount / devices.length) * 100)}% availability`
                         : "No devices"}
@@ -329,18 +329,18 @@ export function DevicesPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 bg-white shadow-sm">
+          <Card className="border-[#E8DDD4] bg-white shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold text-slate-700">Session Durations</CardTitle>
-              <CardDescription className="text-xs text-slate-400">Distribution of configured session lengths</CardDescription>
+              <CardTitle className="text-sm font-semibold text-[#2D2018]">Session Durations</CardTitle>
+              <CardDescription className="text-xs text-[#8A7060]">Distribution of configured session lengths</CardDescription>
             </CardHeader>
             <CardContent className="pb-4">
               {sessionDurationData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={180}>
                   <BarChart data={sessionDurationData}>
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={25} />
-                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#8A7060" }} axisLine={false} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "#8A7060" }} axisLine={false} tickLine={false} width={25} />
+                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #E8DDD4" }} />
                     <Bar dataKey="count" radius={[6, 6, 0, 0]}>
                       {sessionDurationData.map((_, i) => (
                         <Cell key={i} fill={["#3b82f6", "#8b5cf6", "#f59e0b", "#10b981", "#ef4444"][i % 5]} />
@@ -349,7 +349,7 @@ export function DevicesPage() {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex h-[180px] items-center justify-center text-sm text-slate-400">
+                <div className="flex h-[180px] items-center justify-center text-sm text-[#8A7060]">
                   No data
                 </div>
               )}
@@ -369,23 +369,23 @@ export function DevicesPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="device-name" className="text-sm font-medium text-slate-700">Device name</Label>
+              <Label htmlFor="device-name" className="text-sm font-medium text-[#5C3D2E]">Device name</Label>
               <Input
                 id="device-name"
-                className="border-slate-300 bg-white text-slate-900"
+                className="border-[#D4B8A0] bg-white text-[#2D2018]"
                 placeholder="e.g. Design-Laptop-01"
                 value={pairing.device_name}
                 onChange={(e) => setPairing((p) => ({ ...p, device_name: e.target.value }))}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="session-minutes" className="text-sm font-medium text-slate-700">Session duration (minutes)</Label>
+              <Label htmlFor="session-minutes" className="text-sm font-medium text-[#5C3D2E]">Session duration (minutes)</Label>
               <Input
                 id="session-minutes"
                 type="number"
                 min={15}
                 max={1440}
-                className="border-slate-300 bg-white text-slate-900"
+                className="border-[#D4B8A0] bg-white text-[#2D2018]"
                 value={pairing.session_minutes}
                 onChange={(e) => {
                   const value = Number(e.target.value || 120);
@@ -402,7 +402,7 @@ export function DevicesPage() {
               Cancel
             </Button>
             <Button
-              className="bg-slate-900 text-white hover:bg-slate-800"
+              className="bg-[#9B3C3C] text-white hover:bg-[#843333]"
               onClick={handleGenerateToken}
               disabled={tokenLoading || pairing.device_name.trim().length < 2}
             >
@@ -423,20 +423,20 @@ export function DevicesPage() {
                   <Check className="h-4 w-4 text-emerald-600" />
                 </div>
                 <div>
-                  <CardTitle className="text-base text-slate-900">Token Generated</CardTitle>
-                  <CardDescription className="text-slate-600">
+                  <CardTitle className="text-base text-[#2D2018]">Token Generated</CardTitle>
+                  <CardDescription className="text-[#6B5046]">
                     {newToken.device_name} — {newToken.device_id}
                   </CardDescription>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setNewToken(null)} className="h-8 w-8 text-slate-400">
+              <Button variant="ghost" size="icon" onClick={() => setNewToken(null)} className="h-8 w-8 text-[#8A7060]">
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex flex-col gap-2 md:flex-row md:items-start">
-              <code className="w-full min-w-0 break-all rounded-lg bg-white p-3 text-xs leading-relaxed text-slate-800 border border-slate-200">
+              <code className="w-full min-w-0 break-all rounded-lg bg-white p-3 text-xs leading-relaxed text-[#2D2018] border border-[#E8DDD4]">
                 {newToken.device_token}
               </code>
               <Button
@@ -449,13 +449,13 @@ export function DevicesPage() {
                 {copied ? "Copied!" : "Copy"}
               </Button>
             </div>
-            <div className="grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
+            <div className="grid gap-2 text-sm text-[#6B5046] sm:grid-cols-2">
               <div className="flex items-center gap-2">
-                <Timer className="h-4 w-4 text-slate-400" />
+                <Timer className="h-4 w-4 text-[#8A7060]" />
                 Session: {newToken.session_minutes} minutes
               </div>
               <div className="flex items-center gap-2">
-                <CalendarClock className="h-4 w-4 text-slate-400" />
+                <CalendarClock className="h-4 w-4 text-[#8A7060]" />
                 Expires: {formatDate(newToken.expires_at)}
               </div>
             </div>
@@ -465,31 +465,31 @@ export function DevicesPage() {
 
       {/* Filter & Search */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
+        <div className="flex items-center gap-1 rounded-lg border border-[#E8DDD4] bg-white p-1">
           {filterTabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setFilterTab(tab.key)}
               className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
                 filterTab === tab.key
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                  ? "bg-[#9B3C3C] text-white shadow-sm"
+                  : "text-[#6B5046] hover:text-[#2D2018] hover:bg-[#FAF5F0]"
               }`}
             >
               {tab.label}
-              <span className={`ml-1.5 ${filterTab === tab.key ? "text-slate-300" : "text-slate-400"}`}>
+              <span className={`ml-1.5 ${filterTab === tab.key ? "text-white/60" : "text-[#8A7060]"}`}>
                 {tab.count}
               </span>
             </button>
           ))}
         </div>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8A7060]" />
           <Input
             placeholder="Search devices..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-9 w-full border-slate-200 bg-white pl-9 text-sm sm:w-64"
+            className="h-9 w-full border-[#E8DDD4] bg-white pl-9 text-sm sm:w-64"
           />
         </div>
       </div>
@@ -505,8 +505,8 @@ export function DevicesPage() {
                 expired
                   ? "border-amber-200"
                   : device.online
-                    ? "border-slate-200 hover:border-emerald-200"
-                    : "border-slate-200"
+                    ? "border-[#E8DDD4] hover:border-emerald-200"
+                    : "border-[#E8DDD4]"
               }`}
             >
               <CardContent className="p-4">
@@ -516,10 +516,10 @@ export function DevicesPage() {
                     onClick={() => device.online && navigate(`/app/navigate/${device.device_id}`)}
                   >
                     <div className={`relative flex h-10 w-10 items-center justify-center rounded-lg ${
-                      device.online ? "bg-emerald-50" : expired ? "bg-amber-50" : "bg-slate-100"
+                      device.online ? "bg-emerald-50" : expired ? "bg-amber-50" : "bg-[#FAF5F0]"
                     }`}>
                       <Monitor className={`h-5 w-5 ${
-                        device.online ? "text-emerald-600" : expired ? "text-amber-500" : "text-slate-400"
+                        device.online ? "text-emerald-600" : expired ? "text-amber-500" : "text-[#8A7060]"
                       }`} />
                       {device.online && (
                         <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
@@ -529,10 +529,10 @@ export function DevicesPage() {
                       )}
                     </div>
                     <div>
-                      <p className={`text-sm font-semibold text-slate-900 ${device.online ? "group-hover:text-emerald-600" : ""} transition-colors`}>
+                      <p className={`text-sm font-semibold text-[#2D2018] ${device.online ? "group-hover:text-emerald-600" : ""} transition-colors`}>
                         {device.device_name}
                       </p>
-                      <p className="text-[11px] font-mono text-slate-400">{device.device_id}</p>
+                      <p className="text-[11px] font-mono text-[#8A7060]">{device.device_id}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -542,7 +542,7 @@ export function DevicesPage() {
                           ? "bg-amber-100 text-amber-700 border-amber-200"
                           : device.online
                             ? "bg-emerald-100 text-emerald-700 border-emerald-200"
-                            : "bg-slate-100 text-slate-500 border-slate-200"
+                            : "bg-[#FAF5F0] text-[#6B5046] border-[#E8DDD4]"
                       }
                     >
                       {expired ? "Expired" : device.online ? "Online" : "Offline"}
@@ -550,7 +550,7 @@ export function DevicesPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="h-7 w-7 text-[#D4B8A0] hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteTarget(device);
@@ -562,25 +562,25 @@ export function DevicesPage() {
                 </div>
 
                 <div className="mt-4 grid grid-cols-3 gap-2">
-                  <div className="rounded-lg bg-slate-50 px-2.5 py-2">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Resolution</p>
-                    <p className="mt-0.5 text-xs font-semibold text-slate-700">
+                  <div className="rounded-lg bg-[#FAF5F0] px-2.5 py-2">
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-[#8A7060]">Resolution</p>
+                    <p className="mt-0.5 text-xs font-semibold text-[#2D2018]">
                       {device.screen_width > 0 ? `${device.screen_width}×${device.screen_height}` : "N/A"}
                     </p>
                   </div>
-                  <div className="rounded-lg bg-slate-50 px-2.5 py-2">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Session</p>
-                    <p className="mt-0.5 text-xs font-semibold text-slate-700">{device.session_minutes}m</p>
+                  <div className="rounded-lg bg-[#FAF5F0] px-2.5 py-2">
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-[#8A7060]">Session</p>
+                    <p className="mt-0.5 text-xs font-semibold text-[#2D2018]">{device.session_minutes}m</p>
                   </div>
-                  <div className={`rounded-lg px-2.5 py-2 ${expired ? "bg-amber-50" : "bg-slate-50"}`}>
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Status</p>
-                    <p className={`mt-0.5 text-xs font-semibold ${expired ? "text-amber-600" : "text-slate-700"}`}>
+                  <div className={`rounded-lg px-2.5 py-2 ${expired ? "bg-amber-50" : "bg-[#FAF5F0]"}`}>
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-[#8A7060]">Status</p>
+                    <p className={`mt-0.5 text-xs font-semibold ${expired ? "text-amber-600" : "text-[#2D2018]"}`}>
                       {timeRemaining(device.session_expires_at)}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400">
+                <div className="mt-3 flex items-center justify-between text-[11px] text-[#8A7060]">
                   <span className="flex items-center gap-1">
                     <CalendarClock className="h-3 w-3" />
                     {formatDate(device.session_expires_at)}
@@ -589,7 +589,7 @@ export function DevicesPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 px-2 text-[11px] text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      className="h-6 px-2 text-[11px] text-[#9B3C3C] hover:text-[#843333] hover:bg-[#FAF5F0]"
                       onClick={() => navigate(`/app/navigate/${device.device_id}`)}
                     >
                       Connect →
@@ -602,9 +602,9 @@ export function DevicesPage() {
         })}
 
         {filteredDevices.length === 0 && (
-          <Card className="border-slate-200 bg-white shadow-sm lg:col-span-2 xl:col-span-3">
-            <CardContent className="flex flex-col items-center justify-center py-16 text-slate-400">
-              <Monitor className="mb-3 h-12 w-12 text-slate-200" />
+          <Card className="border-[#E8DDD4] bg-white shadow-sm lg:col-span-2 xl:col-span-3">
+            <CardContent className="flex flex-col items-center justify-center py-16 text-[#8A7060]">
+              <Monitor className="mb-3 h-12 w-12 text-[#D4B8A0]" />
               <p className="text-sm font-medium">
                 {devices.length === 0
                   ? "No devices registered yet"
