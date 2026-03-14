@@ -147,6 +147,7 @@ resource "google_cloud_run_v2_service" "server" {
     google_secret_manager_secret_version.mongodb_uri,
     google_secret_manager_secret_version.sentry_dsn,
     google_artifact_registry_repository.server,
+    google_secret_manager_secret_iam_member.cloud_run_secret_access,
   ]
 
   # Cloud Build manages the container image after initial creation.
