@@ -126,7 +126,7 @@ variable "gcs_lifecycle_days" {
 variable "cors_origins" {
   description = "Allowed CORS origins for the web dashboard"
   type        = string
-  default     = "https://app.operonai.com,http://localhost:5173"
+  default     = "https://operonai.netlify.app,http://localhost:5173"
 }
 
 # ── Docker ──────────────────────────────────────────────────────────
