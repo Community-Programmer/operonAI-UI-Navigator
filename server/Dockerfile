@@ -25,15 +25,17 @@ COPY server/pyproject.toml ./server/pyproject.toml
 
 # Install dependencies into a virtual environment
 # 1) CPU-only PyTorch first (avoids pulling ~5 GB of CUDA libs)
-# 2) Then install everything else, replacing opencv-python with headless variant
+# 2) Install the server package and all deps from pyproject.toml
+# 3) Force-replace opencv-python with the headless variant LAST
+#    so cv2 binaries are guaranteed to be present
 RUN uv venv /app/.venv && \
     . /app/.venv/bin/activate && \
     uv pip install --no-cache \
         torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
     cd server && \
     uv pip install --no-cache . && \
-    uv pip install --no-cache opencv-python-headless && \
-    uv pip uninstall opencv-python 2>/dev/null || true
+    uv pip uninstall opencv-python 2>/dev/null || true && \
+    uv pip install --no-cache --reinstall opencv-python-headless
 
 # Copy the server source code
 COPY server/ ./server/
