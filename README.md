@@ -2,19 +2,19 @@
 
 <div align="center">
 
-<img width="400" height="300" alt="UI Navigator Logo" src="" />
-<!-- [PASTE LOGO IMAGE LINK ABOVE OR ADD IT DIRECTLY] -->
+<img width="600" height="162" alt="logo" src="https://github.com/user-attachments/assets/1e8cfcae-d854-428a-9140-b48094d9f19b" />
+
 
 ### Your Intelligent Cloud Orchestrator for Remote Automation
 
-Master desktop environments, automate complex workflows, and navigate seamlessly with a real-time AI co-pilot.
+Master desktop environments, automate complex workflows, and navigate seamlessly with a real-time Operon AI.
 
 </div>
 
 ---
 
-<img width="1900" height="862" alt="Dashboard Preview" src="" />
-<!-- [PASTE DASHBOARD PREVIEW IMAGE HERE] -->
+<img width="1919" height="867" alt="image" src="https://github.com/user-attachments/assets/d77340e2-3fff-4caf-bc66-9250e5e1e53c" />
+
 
 **UI Navigator** is a powerful Cloud Orchestrator and Web Dashboard for remote desktop automation and UI navigation. Powered by Google ADK (Agent Development Kit) and the Gemini Live API, it enables seamless remote control, voice-directed navigation, and intelligent UI segmentation into a single unified experience. It goes beyond typical screencasting by integrating state-of-the-art AI to dynamically understand application interfaces, segment elements via YOLO & EasyOCR, and orchestrate native desktop actions in real-time.
 
@@ -24,8 +24,8 @@ Master desktop environments, automate complex workflows, and navigate seamlessly
 ### 1. Centralized Cloud Orchestration
 Manage multiple connected systems seamlessly from a single unified server.
 
-<img width="1422" height="668" alt="Orchestration View" src="" />
-<!-- [PASTE ORCHESTRATION VIEW SCREENSHOT HERE] -->
+<img width="1916" height="870" alt="devices-1" src="https://github.com/user-attachments/assets/5f86bad1-4f91-42a8-b28e-01d153b3f992" />
+
 
 **Advanced Device Management:**
 - **Real-Time Dashboards** - Visually manage connected systems and active sessions.
@@ -38,8 +38,8 @@ Manage multiple connected systems seamlessly from a single unified server.
 ### 2. Voice-Directed AI Control
 Real-time voice-based control using the Gemini Live API to interpret intent and execute complex desktop actions effortlessly.
 
-<img width="1391" height="735" alt="Voice Agent Flow" src="" />
-<!-- [PASTE VOICE INTERACTION SCREENSHOT HERE] -->
+<img width="1915" height="863" alt="dashboard-1" src="https://github.com/user-attachments/assets/782d37e3-d369-488a-a346-2023316f4c83" />
+
 
 - **Voice Commands** - Navigate applications, click elements, or type text using natural language.
 - **Bidi-Streaming** - Utilizes Google ADK for ultra-fast audio ingestion and generation.
@@ -51,8 +51,8 @@ Real-time voice-based control using the Gemini Live API to interpret intent and 
 ### 3. Intelligent Server-Side UI Segmentation
 Transform flat screenshots into structured, actionable data objects using advanced vision pipelines.
 
-<img width="1837" height="871" alt="Segmentation Example" src="" />
-<!-- [PASTE UI SEGMENTATION ANNOTATED SCREENSHOT HERE] -->
+<img width="1918" height="867" alt="session-1" src="https://github.com/user-attachments/assets/7f1b8ee2-52fc-43a5-b4d1-c617c6a1cb1f" />
+
 
 **Perception Workflow:**
 ```
@@ -69,8 +69,8 @@ Capture Framework → Object Detection (YOLO) → Optical Character Recognition 
 ### 4. Real-time Local Desktop Execution
 The lightweight Desktop GUI ("Local Helper") runs directly on the target machine ensuring fast, native actions.
 
-<img width="1392" height="742" alt="Local Helper GUI" src="" />
-<!-- [PASTE LOCAL HELPER GUI SCREENSHOT HERE] -->
+<img width="1233" height="812" alt="app-1" src="https://github.com/user-attachments/assets/b99442a3-b246-4e7a-9909-3ed55ca221d5" />
+
 
 - **Direct OS Integration** - Executes OS-level commands (clicks, typing, keyboard shortcuts, scrolls).
 - **Responsive Frame Capture** - Takes compressed JPEG screenshots only when requested to save bandwidth.
@@ -82,22 +82,25 @@ The lightweight Desktop GUI ("Local Helper") runs directly on the target machine
 ## 🧩 Architecture & Workflows
 
 ### System Architecture
-<img width="933" height="750" alt="System Architecture Diagram" src="" />
+
+![1](https://github.com/user-attachments/assets/bb909386-23ee-42b1-8905-9ac3fb8765ce)
+
 <!-- [PASTE SYSTEM ARCHITECTURE DIAGRAM HERE] -->
 <!-- Description: "Operon Ai. System Architecture" showing FastAPI Backend, React Frontend, Agent, Local Helper, DB, and Cloud Storage -->
 
 ### Overall Navigation Flow
-<img width="1627" height="817" alt="Navigation Flow Diagram" src="" />
+
+![2](https://github.com/user-attachments/assets/4fe51095-245e-40c5-a430-1ec7c53da94e)
 <!-- [PASTE SEQUENCE DIAGRAM: OVERALL NAVIGATION FLOW HERE] -->
 <!-- Description: Sequence Diagram showing User -> React Frontend -> Backend API -> AI Navigator Agent -> Local Device Agent -->
 
 ### WebSocket Real-Time Communication
-<img width="1617" height="915" alt="WebSocket Diagram" src="" />
+![3](https://github.com/user-attachments/assets/0bbd1b15-b81c-4ec9-b45d-ed8e86bb73cc)
 <!-- [PASTE SEQUENCE DIAGRAM: WEBSOCKET COMMUNICATION HERE] -->
 <!-- Description: Sequence Diagram detailing the frame capture, AI processing, and command execution loop -->
 
 ### AI Navigator Agent Loop
-<img width="1392" height="742" alt="Agent Loop Diagram" src="" />
+![4](https://github.com/user-attachments/assets/4315c29e-6a46-4125-95f3-d41e1c30e050)
 <!-- [PASTE STATE DIAGRAM: AI NAVIGATOR AGENT LOOP HERE] -->
 <!-- Description: State machine depicting Idle -> Perceiving -> Planning -> Executing -> Verifying -> Logging -->
 
