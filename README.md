@@ -167,15 +167,19 @@ uv sync
 
 **Environment Variables (`server/.env`):**
 ```env
+GOOGLE_GENAI_USE_VERTEXAI=FALSE
+GOOGLE_API_KEY=AIz...
+JWT_SECRET_KEY=secretkey
+
+LIVE_AGENT_MODEL=gemini-2.5-flash-native-audio-preview-09-2025
 MONGODB_URI=mongodb://localhost:27017
 MONGODB_DB_NAME=ui_navigator
 ```
 
 **Run the server:**
 ```bash
-uvicorn server.main:app --reload
-# or
-python main.py
+$env:PYTHONPATH = "root-directory-of-project" 
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### 2. Web Client (Dashboard)
