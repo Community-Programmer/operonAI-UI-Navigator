@@ -21,58 +21,58 @@ const STATUS_MAP: Record<
 > = {
   complete: {
     icon: CheckCircle2,
-    iconColor: "text-emerald-500",
-    bgColor: "bg-emerald-50",
-    textColor: "text-emerald-700",
+    iconColor: "text-[#9B3C3C]",
+    bgColor: "bg-[#FAF5F0]",
+    textColor: "text-[#9B3C3C]",
     label: "Complete",
   },
   failed: {
     icon: XCircle,
-    iconColor: "text-rose-500",
-    bgColor: "bg-rose-50",
-    textColor: "text-rose-700",
+    iconColor: "text-[#5C3D2E]",
+    bgColor: "bg-[#E8DDD4]",
+    textColor: "text-[#5C3D2E]",
     label: "Failed",
   },
   running: {
     icon: Loader2,
-    iconColor: "text-blue-500",
-    bgColor: "bg-blue-50",
-    textColor: "text-blue-700",
+    iconColor: "text-[#C9A48C]",
+    bgColor: "bg-[#FAF5F0]",
+    textColor: "text-[#C9A48C]",
     label: "Running",
   },
   completed: {
     icon: CheckCircle2,
-    iconColor: "text-emerald-500",
-    bgColor: "bg-emerald-50",
-    textColor: "text-emerald-700",
+    iconColor: "text-[#9B3C3C]",
+    bgColor: "bg-[#FAF5F0]",
+    textColor: "text-[#9B3C3C]",
     label: "Completed",
   },
   error: {
     icon: XCircle,
-    iconColor: "text-rose-500",
-    bgColor: "bg-rose-50",
-    textColor: "text-rose-700",
+    iconColor: "text-[#5C3D2E]",
+    bgColor: "bg-[#E8DDD4]",
+    textColor: "text-[#5C3D2E]",
     label: "Error",
   },
   interrupted: {
     icon: StopCircle,
-    iconColor: "text-amber-500",
-    bgColor: "bg-amber-50",
-    textColor: "text-amber-700",
+    iconColor: "text-[#8A7060]",
+    bgColor: "bg-[#E8DDD4]",
+    textColor: "text-[#8A7060]",
     label: "Interrupted",
   },
   max_iterations: {
     icon: AlertTriangle,
-    iconColor: "text-orange-500",
-    bgColor: "bg-orange-50",
-    textColor: "text-orange-700",
+    iconColor: "text-[#8A7060]",
+    bgColor: "bg-[#E8DDD4]",
+    textColor: "text-[#8A7060]",
     label: "Max Iterations",
   },
   needs_human: {
     icon: AlertTriangle,
-    iconColor: "text-purple-500",
-    bgColor: "bg-purple-50",
-    textColor: "text-purple-700",
+    iconColor: "text-[#C9A48C]",
+    bgColor: "bg-[#FAF5F0]",
+    textColor: "text-[#C9A48C]",
     label: "Needs Human",
   },
 };
@@ -232,7 +232,7 @@ export function SessionsPage() {
                       {session.goal}
                     </p>
                     {session.mode === "voice" && (
-                      <span className="shrink-0 rounded bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-violet-600">
+                      <span className="shrink-0 rounded bg-[#E8DDD4] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#5C3D2E]">
                         Voice
                       </span>
                     )}

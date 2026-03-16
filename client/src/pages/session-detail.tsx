@@ -29,14 +29,14 @@ const STATUS_CFG: Record<
   string,
   { icon: typeof CheckCircle2; iconColor: string; bgColor: string; textColor: string; label: string }
 > = {
-  complete: { icon: CheckCircle2, iconColor: "text-emerald-500", bgColor: "bg-emerald-50", textColor: "text-emerald-700", label: "Complete" },
-  failed: { icon: XCircle, iconColor: "text-rose-500", bgColor: "bg-rose-50", textColor: "text-rose-700", label: "Failed" },
-  running: { icon: Loader2, iconColor: "text-blue-500", bgColor: "bg-blue-50", textColor: "text-blue-700", label: "Running" },
-  interrupted: { icon: StopCircle, iconColor: "text-amber-500", bgColor: "bg-amber-50", textColor: "text-amber-700", label: "Interrupted" },
-  max_iterations: { icon: AlertTriangle, iconColor: "text-orange-500", bgColor: "bg-orange-50", textColor: "text-orange-700", label: "Max Iterations" },
-  needs_human: { icon: AlertTriangle, iconColor: "text-purple-500", bgColor: "bg-purple-50", textColor: "text-purple-700", label: "Needs Human" },
-  completed: { icon: CheckCircle2, iconColor: "text-emerald-500", bgColor: "bg-emerald-50", textColor: "text-emerald-700", label: "Completed" },
-  error: { icon: XCircle, iconColor: "text-rose-500", bgColor: "bg-rose-50", textColor: "text-rose-700", label: "Error" },
+  complete: { icon: CheckCircle2, iconColor: "text-[#9B3C3C]", bgColor: "bg-[#FAF5F0]", textColor: "text-[#9B3C3C]", label: "Complete" },
+  failed: { icon: XCircle, iconColor: "text-[#5C3D2E]", bgColor: "bg-[#E8DDD4]", textColor: "text-[#5C3D2E]", label: "Failed" },
+  running: { icon: Loader2, iconColor: "text-[#C9A48C]", bgColor: "bg-[#FAF5F0]", textColor: "text-[#C9A48C]", label: "Running" },
+  interrupted: { icon: StopCircle, iconColor: "text-[#6B5046]", bgColor: "bg-[#E8DDD4]", textColor: "text-[#6B5046]", label: "Interrupted" },
+  max_iterations: { icon: AlertTriangle, iconColor: "text-[#5C3D2E]", bgColor: "bg-[#E8DDD4]", textColor: "text-[#5C3D2E]", label: "Max Iterations" },
+  needs_human: { icon: AlertTriangle, iconColor: "text-[#8A7060]", bgColor: "bg-[#FAF5F0]", textColor: "text-[#8A7060]", label: "Needs Human" },
+  completed: { icon: CheckCircle2, iconColor: "text-[#9B3C3C]", bgColor: "bg-[#FAF5F0]", textColor: "text-[#9B3C3C]", label: "Completed" },
+  error: { icon: XCircle, iconColor: "text-[#5C3D2E]", bgColor: "bg-[#E8DDD4]", textColor: "text-[#5C3D2E]", label: "Error" },
 };
 
 function formatDuration(seconds: number | null): string {
@@ -111,9 +111,9 @@ function IterationCard({
       <div
         className={`absolute -left-8 top-4 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white text-[9px] font-bold shadow-sm ${
           hasVerification && iter.verification?.status === "complete"
-            ? "bg-emerald-500 text-white"
+            ? "bg-[#FAF5F0] text-white"
             : hasVerification
-              ? "bg-blue-500 text-white"
+              ? "bg-[#FAF5F0] text-white"
               : "bg-[#E8DDD4] text-[#6B5046]"
         }`}
       >
@@ -140,10 +140,10 @@ function IterationCard({
                 <span
                   className={`rounded px-1.5 py-px text-[10px] font-bold ${
                     iter.verification?.status === "complete"
-                      ? "bg-emerald-50 text-emerald-600"
+                      ? "bg-[#FAF5F0] text-[#9B3C3C]"
                       : iter.verification?.status === "failed"
-                        ? "bg-rose-50 text-rose-600"
-                        : "bg-blue-50 text-blue-600"
+                        ? "bg-[#E8DDD4] text-[#5C3D2E]"
+                        : "bg-[#FAF5F0] text-[#C9A48C]"
                   }`}
                 >
                   {iter.verification?.progress_percent}%
@@ -189,7 +189,7 @@ function IterationCard({
                 {iter.agent_reasoning && (
                   <div>
                     <SectionHeader icon={<Brain className="h-3 w-3" />} label="Agent Reasoning" />
-                    <div className="rounded-lg border border-violet-100 bg-violet-50/60 p-3 text-[12px] leading-relaxed text-[#5C3D2E]">
+                    <div className="rounded-lg border border-[#E8DDD4] bg-[#E8DDD4]/60 p-3 text-[12px] leading-relaxed text-[#5C3D2E]">
                       {iter.agent_reasoning}
                     </div>
                   </div>
@@ -211,8 +211,8 @@ function IterationCard({
                           <Zap
                             className={`mt-0.5 h-3 w-3 shrink-0 ${
                               action.status === "success"
-                                ? "text-emerald-500"
-                                : "text-rose-500"
+                                ? "text-[#9B3C3C]"
+                                : "text-[#5C3D2E]"
                             }`}
                           />
                           <div className="min-w-0 text-[12px]">
@@ -248,10 +248,10 @@ function IterationCard({
                     <div
                       className={`rounded-lg border p-3 text-[12px] ${
                         iter.verification?.status === "complete"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                          ? "border-[#C9A48C] bg-[#FAF5F0] text-[#9B3C3C]"
                           : iter.verification?.status === "failed"
-                            ? "border-rose-200 bg-rose-50 text-rose-800"
-                            : "border-blue-200 bg-blue-50 text-blue-800"
+                            ? "border-[#D4B8A0] bg-[#E8DDD4] text-[#5C3D2E]"
+                            : "border-[#E8DDD4] bg-[#FAF5F0] text-[#C9A48C]"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -266,10 +266,10 @@ function IterationCard({
                         <div
                           className={`h-1 rounded-full transition-all ${
                             iter.verification?.status === "complete"
-                              ? "bg-emerald-500"
+                              ? "bg-[#FAF5F0]"
                               : iter.verification?.status === "failed"
-                                ? "bg-rose-500"
-                                : "bg-blue-500"
+                                ? "bg-[#E8DDD4]"
+                                : "bg-[#FAF5F0]"
                           }`}
                           style={{
                             width: `${iter.verification?.progress_percent ?? 0}%`,
@@ -331,7 +331,7 @@ function VoiceIterationCard({
   return (
     <div className="relative ml-8">
       {/* Timeline dot */}
-      <div className="absolute -left-8 top-4 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-violet-500 text-[9px] font-bold text-white shadow-sm">
+      <div className="absolute -left-8 top-4 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#E8DDD4] text-[9px] font-bold text-white shadow-sm">
         {iter.iteration + 1}
       </div>
 
@@ -346,12 +346,12 @@ function VoiceIterationCard({
                 Snapshot {iter.iteration + 1}
               </span>
               {iter.actions.length > 0 && (
-                <span className="rounded bg-amber-50 px-1.5 py-px text-[10px] font-medium text-amber-600">
+                <span className="rounded bg-[#E8DDD4] px-1.5 py-px text-[10px] font-medium text-[#6B5046]">
                   {iter.actions.length} action{iter.actions.length !== 1 ? "s" : ""}
                 </span>
               )}
               {transcriptLines.length > 0 && (
-                <span className="rounded bg-violet-50 px-1.5 py-px text-[10px] font-medium text-violet-600">
+                <span className="rounded bg-[#E8DDD4] px-1.5 py-px text-[10px] font-medium text-[#5C3D2E]">
                   {transcriptLines.length} message{transcriptLines.length !== 1 ? "s" : ""}
                 </span>
               )}
@@ -395,10 +395,10 @@ function VoiceIterationCard({
                             className={`max-w-[90%] rounded-2xl px-3 py-2 text-[12px] leading-relaxed ${
                               line.role === "user"
                                 ? "rounded-br-md bg-[#2D2018] text-white"
-                                : "rounded-bl-md bg-violet-50 text-[#2D2018]"
+                                : "rounded-bl-md bg-[#E8DDD4] text-[#2D2018]"
                             }`}
                           >
-                            <p className={`mb-0.5 text-[10px] font-bold ${line.role === "user" ? "text-[#8A7060]" : "text-violet-500"}`}>
+                            <p className={`mb-0.5 text-[10px] font-bold ${line.role === "user" ? "text-[#8A7060]" : "text-[#5C3D2E]"}`}>
                               {line.role === "user" ? "You" : "Agent"}
                             </p>
                             {line.text}
@@ -416,7 +416,7 @@ function VoiceIterationCard({
                     <div className="space-y-1.5">
                       {iter.actions.map((action, i) => (
                         <div key={i} className="flex items-start gap-2 rounded-lg border border-[#E8DDD4]/60 bg-[#FAF5F0] p-2.5">
-                          <Zap className={`mt-0.5 h-3 w-3 shrink-0 ${action.status === "success" ? "text-emerald-500" : "text-rose-500"}`} />
+                          <Zap className={`mt-0.5 h-3 w-3 shrink-0 ${action.status === "success" ? "text-[#9B3C3C]" : "text-[#5C3D2E]"}`} />
                           <div className="min-w-0 text-[12px]">
                             <span className="font-mono font-semibold text-[#2D2018]">{action.action}</span>
                             {action.reason && <p className="mt-0.5 text-[#6B5046]">{action.reason}</p>}
@@ -479,9 +479,9 @@ function VoiceSessionDetailView({
         <div className="flex items-start justify-between gap-4 rounded-xl border border-[#E8DDD4] bg-white px-5 py-4 shadow-sm">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <Mic className="h-5 w-5 text-violet-500" />
+              <Mic className="h-5 w-5 text-[#5C3D2E]" />
               <h1 className="text-lg font-bold text-[#2D2018]">{session.goal}</h1>
-              <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-violet-600">
+              <span className="rounded bg-[#E8DDD4] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#5C3D2E]">
                 Voice
               </span>
             </div>
@@ -522,7 +522,7 @@ function VoiceSessionDetailView({
       {allTranscript.length > 0 && (
         <div className="rounded-xl border border-[#E8DDD4] bg-white shadow-sm">
           <div className="flex items-center gap-2 border-b border-[#E8DDD4]/60 px-5 py-3">
-            <MessageSquare className="h-4 w-4 text-violet-500" />
+            <MessageSquare className="h-4 w-4 text-[#5C3D2E]" />
             <h2 className="text-sm font-semibold text-[#2D2018]">Conversation</h2>
             <span className="ml-auto text-[11px] font-medium text-[#8A7060]">
               {allTranscript.length} messages
@@ -535,10 +535,10 @@ function VoiceSessionDetailView({
                   className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-[12px] leading-relaxed ${
                     line.role === "user"
                       ? "rounded-br-md bg-[#2D2018] text-white"
-                      : "rounded-bl-md bg-violet-50 text-[#2D2018]"
+                      : "rounded-bl-md bg-[#E8DDD4] text-[#2D2018]"
                   }`}
                 >
-                  <p className={`mb-0.5 text-[10px] font-bold ${line.role === "user" ? "text-[#8A7060]" : "text-violet-500"}`}>
+                  <p className={`mb-0.5 text-[10px] font-bold ${line.role === "user" ? "text-[#8A7060]" : "text-[#5C3D2E]"}`}>
                     {line.role === "user" ? "You" : "Agent"}
                   </p>
                   {line.text}
@@ -613,8 +613,8 @@ export function SessionDetailPage() {
   if (error || !session) {
     return (
       <div className="py-20 text-center">
-        <XCircle className="mx-auto h-8 w-8 text-rose-400" />
-        <p className="mt-3 text-sm text-rose-600">{error || "Session not found"}</p>
+        <XCircle className="mx-auto h-8 w-8 text-[#5C3D2E]" />
+        <p className="mt-3 text-sm text-[#5C3D2E]">{error || "Session not found"}</p>
         <button
           onClick={() => navigate("/app/sessions")}
           className="mt-4 text-sm text-[#9B3C3C] hover:underline"
@@ -666,7 +666,7 @@ export function SessionDetailPage() {
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-bold text-[#2D2018]">{session.goal}</h1>
               {session.mode === "voice" && (
-                <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-violet-600">
+                <span className="rounded bg-[#E8DDD4] px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#5C3D2E]">
                   Voice
                 </span>
               )}
@@ -778,20 +778,20 @@ export function SessionDetailPage() {
         <div
           className={`rounded-xl border p-4 ${
             session.final_verification.status === "complete"
-              ? "border-emerald-200 bg-emerald-50"
+              ? "border-[#C9A48C] bg-[#FAF5F0]"
               : session.final_verification.status === "failed"
-                ? "border-rose-200 bg-rose-50"
-                : "border-blue-200 bg-blue-50"
+                ? "border-[#D4B8A0] bg-[#E8DDD4]"
+                : "border-[#E8DDD4] bg-[#FAF5F0]"
           }`}
         >
           <div className="flex items-center justify-between">
             <h2
               className={`flex items-center gap-2 text-sm font-semibold ${
                 session.final_verification.status === "complete"
-                  ? "text-emerald-800"
+                  ? "text-[#9B3C3C]"
                   : session.final_verification.status === "failed"
-                    ? "text-rose-800"
-                    : "text-blue-800"
+                    ? "text-[#5C3D2E]"
+                    : "text-[#C9A48C]"
               }`}
             >
               <Crosshair className="h-4 w-4" />
@@ -800,10 +800,10 @@ export function SessionDetailPage() {
             <span
               className={`text-lg font-bold ${
                 session.final_verification.status === "complete"
-                  ? "text-emerald-700"
+                  ? "text-[#9B3C3C]"
                   : session.final_verification.status === "failed"
-                    ? "text-rose-700"
-                    : "text-blue-700"
+                    ? "text-[#5C3D2E]"
+                    : "text-[#C9A48C]"
               }`}
             >
               {session.final_verification.progress_percent}%
@@ -814,10 +814,10 @@ export function SessionDetailPage() {
             <div
               className={`h-1.5 rounded-full transition-all ${
                 session.final_verification.status === "complete"
-                  ? "bg-emerald-500"
+                  ? "bg-[#FAF5F0]"
                   : session.final_verification.status === "failed"
-                    ? "bg-rose-500"
-                    : "bg-blue-500"
+                    ? "bg-[#E8DDD4]"
+                    : "bg-[#FAF5F0]"
               }`}
               style={{
                 width: `${session.final_verification.progress_percent}%`,
@@ -828,10 +828,10 @@ export function SessionDetailPage() {
             <p
               className={`mt-2 text-xs leading-relaxed ${
                 session.final_verification.status === "complete"
-                  ? "text-emerald-700"
+                  ? "text-[#9B3C3C]"
                   : session.final_verification.status === "failed"
-                    ? "text-rose-700"
-                    : "text-blue-700"
+                    ? "text-[#5C3D2E]"
+                    : "text-[#C9A48C]"
               }`}
             >
               {session.final_verification.reasoning}

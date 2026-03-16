@@ -94,7 +94,7 @@ export function SystemsPage() {
   }, {});
   const resolutionChartData = Object.entries(resolutionData).map(([name, value]) => ({ name, value }));
 
-  const pieColors = ["#3b82f6", "#8b5cf6", "#f59e0b", "#10b981", "#ef4444", "#ec4899"];
+  const pieColors = ["#9B3C3C", "#5C3D2E", "#C9A48C", "#6B5046", "#D4B8A0", "#E8DDD4"];
 
   const expiredCount = systems.filter((s) => isExpired(s.session_expires_at)).length;
   const activeCount = systems.length - expiredCount;
@@ -128,16 +128,16 @@ export function SystemsPage() {
                 <p className="text-xs font-medium uppercase tracking-wider text-[#8A7060]">Online</p>
                 <p className="mt-1 text-3xl font-bold text-[#2D2018]">{onlineCount}</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
-                <Wifi className="h-5 w-5 text-emerald-600" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FAF5F0]">
+                <Wifi className="h-5 w-5 text-[#9B3C3C]" />
               </div>
             </div>
             <div className="mt-3 flex items-center gap-1.5">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FAF5F0] opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#FAF5F0]" />
               </span>
-              <span className="text-xs text-emerald-600 font-medium">Live monitoring</span>
+              <span className="text-xs text-[#9B3C3C] font-medium">Live monitoring</span>
             </div>
           </CardContent>
         </Card>
@@ -179,8 +179,8 @@ export function SystemsPage() {
                 <p className="text-xs font-medium uppercase tracking-wider text-[#8A7060]">Expired</p>
                 <p className="mt-1 text-3xl font-bold text-[#2D2018]">{expiredCount}</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50">
-                <Clock3 className="h-5 w-5 text-amber-600" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FAF5F0]">
+                <Clock3 className="h-5 w-5 text-[#6B5046]" />
               </div>
             </div>
             <p className="mt-3 text-xs text-[#8A7060]">Need renewal</p>
@@ -202,8 +202,8 @@ export function SystemsPage() {
                 <AreaChart data={history}>
                   <defs>
                     <linearGradient id="onlineGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#9B3C3C" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#9B3C3C" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="time" tick={{ fontSize: 10, fill: "#8A7060" }} axisLine={false} tickLine={false} />
@@ -214,7 +214,7 @@ export function SystemsPage() {
                   <Area
                     type="monotone"
                     dataKey="online"
-                    stroke="#10b981"
+                    stroke="#9B3C3C"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#onlineGrad)"
@@ -304,7 +304,7 @@ export function SystemsPage() {
               <Card
                 key={system.device_id}
                 className={`group cursor-pointer border bg-white shadow-sm transition-all hover:shadow-md ${
-                  expired ? "border-amber-200 hover:border-amber-300" : "border-[#E8DDD4] hover:border-[#C9A48C]"
+                  expired ? "border-[#D4B8A0] hover:border-[#D4B8A0]" : "border-[#E8DDD4] hover:border-[#C9A48C]"
                 }`}
                 onClick={() => navigate(`/app/navigate/${system.device_id}`)}
               >
@@ -312,9 +312,9 @@ export function SystemsPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                        expired ? "bg-amber-50" : "bg-emerald-50"
+                        expired ? "bg-[#FAF5F0]" : "bg-[#FAF5F0]"
                       }`}>
-                        <Monitor className={`h-5 w-5 ${expired ? "text-amber-600" : "text-emerald-600"}`} />
+                        <Monitor className={`h-5 w-5 ${expired ? "text-[#6B5046]" : "text-[#9B3C3C]"}`} />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-[#2D2018] group-hover:text-[#9B3C3C] transition-colors">
@@ -324,8 +324,8 @@ export function SystemsPage() {
                       </div>
                     </div>
                     <Badge className={expired
-                      ? "bg-amber-100 text-amber-700 border-amber-200"
-                      : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                      ? "bg-[#FAF5F0] text-[#6B5046] border-[#D4B8A0]"
+                      : "bg-[#FAF5F0] text-[#9B3C3C] border-[#C9A48C]"
                     }>
                       {expired ? "Expired" : "Online"}
                     </Badge>

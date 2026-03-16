@@ -134,8 +134,8 @@ export function DevicesPage() {
 
   // Chart data
   const statusData = [
-    { name: "Online", value: onlineCount, color: "#10b981" },
-    { name: "Offline", value: offlineCount, color: "#94a3b8" },
+    { name: "Online", value: onlineCount, color: "#9B3C3C" },    // Theme primary
+    { name: "Offline", value: offlineCount, color: "#D4B8A0" },  // Theme muted tan
   ].filter((d) => d.value > 0);
 
   const sessionDurationData = useMemo(() => {
@@ -243,10 +243,10 @@ export function DevicesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wider text-[#8A7060]">Online</p>
-                <p className="mt-1 text-3xl font-bold text-emerald-600">{onlineCount}</p>
+                <p className="mt-1 text-3xl font-bold text-[#9B3C3C]">{onlineCount}</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
-                <Wifi className="h-5 w-5 text-emerald-600" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FAF5F0]">
+                <Wifi className="h-5 w-5 text-[#9B3C3C]" />
               </div>
             </div>
           </CardContent>
@@ -271,10 +271,10 @@ export function DevicesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wider text-[#8A7060]">Expired</p>
-                <p className="mt-1 text-3xl font-bold text-amber-600">{expiredCount}</p>
+                <p className="mt-1 text-3xl font-bold text-[#6B5046]">{expiredCount}</p>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50">
-                <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FAF5F0]">
+                <AlertTriangle className="h-5 w-5 text-[#6B5046]" />
               </div>
             </div>
           </CardContent>
@@ -343,7 +343,7 @@ export function DevicesPage() {
                     <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #E8DDD4" }} />
                     <Bar dataKey="count" radius={[6, 6, 0, 0]}>
                       {sessionDurationData.map((_, i) => (
-                        <Cell key={i} fill={["#3b82f6", "#8b5cf6", "#f59e0b", "#10b981", "#ef4444"][i % 5]} />
+                        <Cell key={i} fill={["#9B3C3C", "#5C3D2E", "#C9A48C", "#6B5046", "#D4B8A0"][i % 5]} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -415,12 +415,12 @@ export function DevicesPage() {
 
       {/* Generated Token */}
       {newToken && (
-        <Card className="border-emerald-200 bg-emerald-50/30 shadow-sm">
+        <Card className="border-[#C9A48C] bg-[#FAF5F0]/30 shadow-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100">
-                  <Check className="h-4 w-4 text-emerald-600" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FAF5F0]">
+                  <Check className="h-4 w-4 text-[#9B3C3C]" />
                 </div>
                 <div>
                   <CardTitle className="text-base text-[#2D2018]">Token Generated</CardTitle>
@@ -503,9 +503,9 @@ export function DevicesPage() {
               key={device.device_id}
               className={`group border bg-white shadow-sm transition-all hover:shadow-md ${
                 expired
-                  ? "border-amber-200"
+                  ? "border-[#D4B8A0]"
                   : device.online
-                    ? "border-[#E8DDD4] hover:border-emerald-200"
+                    ? "border-[#E8DDD4] hover:border-[#C9A48C]"
                     : "border-[#E8DDD4]"
               }`}
             >
@@ -516,20 +516,20 @@ export function DevicesPage() {
                     onClick={() => device.online && navigate(`/app/navigate/${device.device_id}`)}
                   >
                     <div className={`relative flex h-10 w-10 items-center justify-center rounded-lg ${
-                      device.online ? "bg-emerald-50" : expired ? "bg-amber-50" : "bg-[#FAF5F0]"
+                      device.online ? "bg-[#FAF5F0]" : expired ? "bg-[#FAF5F0]" : "bg-[#FAF5F0]"
                     }`}>
                       <Monitor className={`h-5 w-5 ${
-                        device.online ? "text-emerald-600" : expired ? "text-amber-500" : "text-[#8A7060]"
+                        device.online ? "text-[#9B3C3C]" : expired ? "text-[#6B5046]" : "text-[#8A7060]"
                       }`} />
                       {device.online && (
                         <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                          <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500 border-2 border-white" />
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FAF5F0] opacity-75" />
+                          <span className="relative inline-flex h-3 w-3 rounded-full bg-[#FAF5F0] border-2 border-white" />
                         </span>
                       )}
                     </div>
                     <div>
-                      <p className={`text-sm font-semibold text-[#2D2018] ${device.online ? "group-hover:text-emerald-600" : ""} transition-colors`}>
+                      <p className={`text-sm font-semibold text-[#2D2018] ${device.online ? "group-hover:text-[#9B3C3C]" : ""} transition-colors`}>
                         {device.device_name}
                       </p>
                       <p className="text-[11px] font-mono text-[#8A7060]">{device.device_id}</p>
@@ -539,9 +539,9 @@ export function DevicesPage() {
                     <Badge
                       className={
                         expired
-                          ? "bg-amber-100 text-amber-700 border-amber-200"
+                          ? "bg-[#FAF5F0] text-[#6B5046] border-[#D4B8A0]"
                           : device.online
-                            ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                            ? "bg-[#FAF5F0] text-[#9B3C3C] border-[#C9A48C]"
                             : "bg-[#FAF5F0] text-[#6B5046] border-[#E8DDD4]"
                       }
                     >
@@ -572,9 +572,9 @@ export function DevicesPage() {
                     <p className="text-[10px] font-medium uppercase tracking-wider text-[#8A7060]">Session</p>
                     <p className="mt-0.5 text-xs font-semibold text-[#2D2018]">{device.session_minutes}m</p>
                   </div>
-                  <div className={`rounded-lg px-2.5 py-2 ${expired ? "bg-amber-50" : "bg-[#FAF5F0]"}`}>
+                  <div className={`rounded-lg px-2.5 py-2 ${expired ? "bg-[#FAF5F0]" : "bg-[#FAF5F0]"}`}>
                     <p className="text-[10px] font-medium uppercase tracking-wider text-[#8A7060]">Status</p>
-                    <p className={`mt-0.5 text-xs font-semibold ${expired ? "text-amber-600" : "text-[#2D2018]"}`}>
+                    <p className={`mt-0.5 text-xs font-semibold ${expired ? "text-[#6B5046]" : "text-[#2D2018]"}`}>
                       {timeRemaining(device.session_expires_at)}
                     </p>
                   </div>

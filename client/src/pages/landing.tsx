@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  Apple,
   ArrowRight,
   Check,
   LogOut,
+  Monitor,
   Radio,
   ScrollText,
   Settings,
@@ -44,31 +46,20 @@ type Feature = {
   images: FeatureImage[];
 };
 
-const getRandomImages = (seedPrefix: string): FeatureImage[] => {
-  return Array.from({ length: 4 }, (_, index) => {
-    const seed = `${seedPrefix}-${index + 1}-${Math.floor(Math.random() * 100_000)}`;
-
-    return {
-      src: `https://picsum.photos/seed/${seed}/1600/900`,
-      alt: `${seedPrefix} preview ${index + 1}`,
-    };
-  });
-};
-
 function ImagesCarousel({ images }: { images: FeatureImage[] }) {
   const [api, setApi] = useState<CarouselApi>();
 
   useEffect(() => {
-    if (!api) return;
+    if (!api || images.length <= 1) return;
 
     const timer = window.setInterval(() => {
       api.scrollNext();
-    }, 2000);
+    }, 3000);
 
     return () => {
       window.clearInterval(timer);
     };
-  }, [api]);
+  }, [api, images.length]);
 
   return (
     <Carousel
@@ -122,16 +113,145 @@ function FeatureGrid({ features }: { features: Feature[] }) {
   );
 }
 
-function TextSection({ title, desc }: { title: string; desc: string }) {
+function ProcessSteps() {
+  const stepsData = [
+    {
+      num: 1,
+      title: "Device Pairing",
+      items: ["Token-based onboarding", "Secure connection", "Instant access"],
+      color: "bg-[#E8DDD4] text-[#2D2018]"
+    },
+    {
+      num: 2,
+      title: "Goal Formulation",
+      items: ["Natural language input", "Voice command analysis", "Intent understanding"],
+      color: "bg-[#C9A48C] text-[#2D2018]"
+    },
+    {
+      num: 3,
+      title: "AI Execution",
+      items: ["Observe screen context", "Plan and execute", "Verify outcomes"],
+      color: "bg-[#9B3C3C] text-white"
+    },
+    {
+      num: 4,
+      title: "Session Audit",
+      items: ["Full execution logging", "Action timeline replay", "Deep performance metrics"],
+      color: "bg-[#5C3D2E] text-white"
+    }
+  ];
+
   return (
-    <section className="border-y border-[#E8DDD4] bg-white py-20">
-      <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
-        <h2 className="text-3xl font-bold tracking-tight text-[#2D2018] sm:text-4xl md:text-5xl">
-          {title}
+    <section className="bg-[#FAF5F0] py-20 md:py-32 overflow-hidden border-y border-[#E8DDD4]">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 text-center">
+        <h2 className="mx-auto max-w-3xl text-3xl font-bold tracking-tight text-[#2D2018] sm:text-4xl md:text-5xl mb-4 md:mb-16 leading-[1.15]">
+          From natural language to automated execution <span className="text-[#9B3C3C]">in 4 simple steps</span>
         </h2>
-        <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-[#6B5046] sm:text-lg">
-          {desc}
-        </p>
+
+        {/* Mobile View */}
+        <div className="mt-12 flex flex-col items-center gap-4 md:hidden">
+          {stepsData.map((step) => (
+            <div 
+              key={step.num}
+              className={`flex flex-col items-center justify-center p-8 text-center ${step.color}`}
+              style={{ 
+                width: 280, 
+                height: 242, 
+                clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' 
+              }}
+            >
+              <h3 className="text-lg font-bold mb-3">{step.num}. {step.title}</h3>
+              <ul className="text-sm space-y-2 font-medium">
+                {step.items.map((item, i) => (
+                  <li key={i} className="flex items-center justify-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop View (Honeycomb) */}
+        <div className="hidden md:flex flex-col items-center select-none scale-[0.85] lg:scale-100 mt-8 mb-8">
+          {/* Step 1 */}
+          <div className="z-10 group relative transition-transform hover:scale-105 hover:z-50 duration-300">
+            <div 
+              className={`flex flex-col items-center justify-center p-8 text-center shadow-[0_10px_40px_rgba(0,0,0,0.1)] ${stepsData[0].color}`}
+              style={{ width: 320, height: 277, clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' }}
+            >
+              <h3 className="text-xl font-bold mb-4">{stepsData[0].num}. {stepsData[0].title}</h3>
+              <ul className="text-base space-y-2.5 font-medium">
+                {stepsData[0].items.map((item, i) => (
+                  <li key={i} className="flex items-center justify-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          
+          {/* Step 2 & 3 */}
+          <div className="flex justify-center -mt-[138px] z-20 gap-[160px]">
+            <div className="group relative transition-transform hover:scale-105 hover:z-50 duration-300">
+              <div 
+                className={`flex flex-col items-center justify-center p-8 text-center shadow-[0_10px_40px_rgba(0,0,0,0.1)] ${stepsData[1].color}`}
+                style={{ width: 320, height: 277, clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' }}
+              >
+                <div>
+                  <h3 className="text-xl font-bold mb-4">{stepsData[1].num}. {stepsData[1].title}</h3>
+                  <ul className="text-base space-y-2.5 font-medium">
+                    {stepsData[1].items.map((item, i) => (
+                      <li key={i} className="flex items-center justify-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div className="group relative transition-transform hover:scale-105 hover:z-50 duration-300">
+              <div 
+                className={`flex flex-col items-center justify-center p-8 text-center shadow-[0_10px_40px_rgba(0,0,0,0.1)] ${stepsData[2].color}`}
+                style={{ width: 320, height: 277, clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' }}
+              >
+                <div>
+                  <h3 className="text-xl font-bold mb-4">{stepsData[2].num}. {stepsData[2].title}</h3>
+                  <ul className="text-base space-y-2.5 font-medium">
+                    {stepsData[2].items.map((item, i) => (
+                      <li key={i} className="flex items-center justify-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 4 */}
+          <div className="z-10 group relative transition-transform hover:scale-105 hover:z-50 duration-300 -mt-[138px]">
+            <div 
+              className={`flex flex-col items-center justify-center p-8 text-center shadow-[0_10px_40px_rgba(0,0,0,0.1)] ${stepsData[3].color}`}
+              style={{ width: 320, height: 277, clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' }}
+            >
+              <h3 className="text-xl font-bold mb-4">{stepsData[3].num}. {stepsData[3].title}</h3>
+              <ul className="text-base space-y-2.5 font-medium">
+                {stepsData[3].items.map((item, i) => (
+                  <li key={i} className="flex items-center justify-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -144,13 +264,22 @@ export function LandingPage() {
   const displayName = username ?? userId?.slice(0, 8) ?? "User";
   const initials = username?.slice(0, 2).toUpperCase() ?? userId?.slice(0, 2).toUpperCase() ?? "U";
 
-  const devicePairingImgs = useMemo(() => getRandomImages("device-pairing"), []);
-  const navigationImgs = useMemo(() => getRandomImages("desktop-navigation"), []);
-  const agentLoopImgs = useMemo(() => getRandomImages("agent-loop"), []);
-  const voiceControlImgs = useMemo(() => getRandomImages("voice-control"), []);
-  const sessionLogsImgs = useMemo(() => getRandomImages("session-logs"), []);
-  const dashboardImgs = useMemo(() => getRandomImages("operator-dashboard"), []);
-
+  const devicePairingImgs = useMemo(() => [
+    { src: "/devices-1.png", alt: "Secure Device Pairing Preview" },
+    { src: "/login1.png", alt: "Device Login and Onboarding" }
+  ], []);
+  const navigationImgs = useMemo(() => [
+    { src: "/app-1.png", alt: "Natural Language Navigation Preview" },
+    { src: "/image-11.png", alt: "Automated Execution Demo" }
+  ], []);
+  const agentLoopImgs = useMemo(() => [
+    { src: "/session-1.png", alt: "Observe, Plan, Act, Verify Preview" },
+    { src: "/dashboard-1.png", alt: "Verification and Reporting" }
+  ], []);
+  const voiceControlImgs = useMemo(() => [
+    { src: "/dashboard-1.png", alt: "Live Voice Commands Preview" },
+    { src: "/app-1.png", alt: "Real-time Action Feedback" }
+  ], []);
   const firstFeatureRow = useMemo<Feature[]>(
     () => [
       {
@@ -187,24 +316,6 @@ export function LandingPage() {
     [agentLoopImgs, voiceControlImgs]
   );
 
-  const thirdFeatureRow = useMemo<Feature[]>(
-    () => [
-      {
-        id: "Session-Logs",
-        title: "Full Session Timeline",
-        desc: "Every run captures screenshots, reasoning, actions, and verification outcomes. Teams can audit sessions, debug failures, and replay execution history.",
-        images: sessionLogsImgs,
-      },
-      {
-        id: "Dashboard",
-        title: "Operations Dashboard",
-        desc: "Manage connected systems, monitor active sessions, and review task progress from one dashboard built for reliable desktop automation at scale.",
-        images: dashboardImgs,
-      },
-    ],
-    [dashboardImgs, sessionLogsImgs]
-  );
-
   return (
     <div className="light min-h-svh bg-white text-[#2D2018]" style={{ colorScheme: "light" }}>
       {/* ───── Navbar ───── */}
@@ -215,47 +326,99 @@ export function LandingPage() {
           </Link>
 
           {isLoggedIn ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 rounded-full border border-[#E8DDD4] bg-white p-1 pr-3 shadow-sm transition-all hover:border-[#C9AE98] hover:shadow-md focus:outline-none">
-                  <Avatar className="h-7 w-7">
-                    <AvatarFallback className="bg-[#9B3C3C] text-[11px] font-bold text-white">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-xs font-medium text-[#5C3D2E]">
-                    {displayName}
-                  </span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => navigate("/app/systems")}>
-                  <Radio className="mr-2 h-4 w-4" />
-                  Dashboard
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/app/sessions")}>
-                  <ScrollText className="mr-2 h-4 w-4" />
-                  Session Logs
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/app/devices")}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Devices
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => {
-                    logout();
-                    navigate("/login");
-                  }}
-                  className="text-[#9B3C3C] focus:text-[#9B3C3C]"
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-2 mr-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 border-[#D4B8A0] text-[#5C3D2E] hover:bg-[#FAF5F0] hover:text-[#9B3C3C]"
+                  asChild
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <a href="https://github.com/ui-navigator/releases/download/latest/operonAI.exe" download>
+                    <Monitor className="h-4 w-4" />
+                    <span>Windows</span>
+                  </a>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 border-[#D4B8A0] text-[#5C3D2E] hover:bg-[#FAF5F0] hover:text-[#9B3C3C]"
+                  asChild
+                >
+                  <a href="https://github.com/ui-navigator/releases/download/latest/operonAI.dmg" download>
+                    <Apple className="h-4 w-4" />
+                    <span>Mac</span>
+                  </a>
+                </Button>
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 rounded-full border border-[#E8DDD4] bg-white p-1 pr-3 shadow-sm transition-all hover:border-[#C9AE98] hover:shadow-md focus:outline-none">
+                    <Avatar className="h-7 w-7">
+                      <AvatarFallback className="bg-[#9B3C3C] text-[11px] font-bold text-white">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs font-medium text-[#5C3D2E]">
+                      {displayName}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate("/app/systems")}>
+                    <Radio className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/app/sessions")}>
+                    <ScrollText className="mr-2 h-4 w-4" />
+                    Session Logs
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/app/devices")}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Devices
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      logout();
+                      navigate("/login");
+                    }}
+                    className="text-[#9B3C3C] focus:text-[#9B3C3C]"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           ) : (
             <div className="flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-2 mr-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 border-[#D4B8A0] text-[#5C3D2E] hover:bg-[#FAF5F0] hover:text-[#9B3C3C]"
+                  asChild
+                >
+                  <a href="https://github.com/ui-navigator/releases/download/latest/operonAI.exe" download>
+                    <Monitor className="h-4 w-4" />
+                    <span>Windows</span>
+                  </a>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 border-[#D4B8A0] text-[#5C3D2E] hover:bg-[#FAF5F0] hover:text-[#9B3C3C]"
+                  asChild
+                >
+                  <a href="https://github.com/ui-navigator/releases/download/latest/operonAI.dmg" download>
+                    <Apple className="h-4 w-4" />
+                    <span>Mac</span>
+                  </a>
+                </Button>
+              </div>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -282,13 +445,7 @@ export function LandingPage() {
       {/* ───── Hero with Background Lines ───── */}
       <BackgroundLines className="relative flex w-full flex-col items-center !h-auto min-h-[20rem] md:min-h-screen !bg-[#FAF5F0] pt-28 pb-20 sm:pt-32 md:pt-40 md:pb-28">
         <div className="relative z-20 mx-auto max-w-4xl px-4 text-center sm:px-6">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#E8DDD4] bg-white px-4 py-1.5 text-xs font-medium text-[#5C3D2E] shadow-sm">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#C9A48C] opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#9B3C3C]" />
-            </span>
-            AI-Powered Desktop Automation
-          </div>
+          
 
           <h1 className="text-3xl font-bold leading-[1.08] tracking-tight text-[#9B3C3C] sm:text-4xl md:text-6xl lg:text-7xl">
             Control any desktop
@@ -356,16 +513,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <TextSection
-        title="Designed for reliable AI-assisted execution"
-        desc="From secure pairing to auditable session logs, UI Navigator helps operators run repetitive desktop workflows faster, with visibility and control at every step."
-      />
-
-      <section className="bg-[#FAF5F0] pb-24 pt-6">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <FeatureGrid features={thirdFeatureRow} />
-        </div>
-      </section>
+      <ProcessSteps />
 
       {/* ───── CTA Section ───── */}
       <section className="border-t border-[#E8DDD4] bg-white">
