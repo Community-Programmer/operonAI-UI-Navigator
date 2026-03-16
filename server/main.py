@@ -569,10 +569,6 @@ async def ws_voice(
         speech_config=speech_config,
         input_audio_transcription=genai_types.AudioTranscriptionConfig(),
         output_audio_transcription=genai_types.AudioTranscriptionConfig(),
-        # Enable proactive audio — agent can initiate/respond faster
-        proactivity=genai_types.ProactivityConfig(proactive_audio=True),
-        # Enable emotional awareness in voice output
-        enable_affective_dialog=True,
     )
 
     # Create the LiveRequestQueue and register it so the take_screenshot
@@ -706,10 +702,18 @@ async def ws_voice(
                         })
                         user_full_turn = ""
         except Exception as e:
-            # Catch Gemini API errors (like 1007 invalid frame) gracefully
-            # so the session is finalized properly instead of crashing
+            # Catch Gemini Live API WebSocket errors gracefully so the
+            # session is finalized properly instead of crashing.
+            # Known codes: 1007 (invalid frame), 1008 (policy violation /
+            # operation not supported — triggered by tool-calling latency),
+            # 1011 (unexpected condition).
             err_str = str(e)
-            if "1007" in err_str or "invalid" in err_str.lower():
+            is_api_ws_error = any(
+                tok in err_str
+                for tok in ("1007", "1008", "1011", "1006")
+            ) or "invalid" in err_str.lower()
+
+            if is_api_ws_error:
                 logger.warning(
                     "Gemini Live API connection error (device %s): %s",
                     device_id, e,

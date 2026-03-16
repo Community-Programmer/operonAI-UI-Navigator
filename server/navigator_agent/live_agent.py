@@ -14,8 +14,6 @@ Key features:
 from __future__ import annotations
 
 from google.adk.agents import Agent
-from google.adk.planners import BuiltInPlanner
-from google.genai import types
 
 from server.config import LIVE_AGENT_MODEL
 from server.navigator_agent.live_tools import (
@@ -197,15 +195,6 @@ live_agent = Agent(
         "responds instantly to user speech."
     ),
     instruction=LIVE_NAVIGATOR_INSTRUCTION,
-    planner=BuiltInPlanner(
-        thinking_config=types.ThinkingConfig(
-            include_thoughts=True,
-            thinking_budget=2048,
-        )
-    ),
-    generate_content_config=types.GenerateContentConfig(
-        temperature=0.15,
-    ),
     tools=[
         # Vision (on-demand screenshot with typed elements)
         take_screenshot,
