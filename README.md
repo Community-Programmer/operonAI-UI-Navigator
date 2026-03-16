@@ -79,7 +79,7 @@ The lightweight Desktop GUI ("Local Helper") runs directly on the target machine
 
 ---
 
-## 🧩 Architecture & Workflows
+##  Architecture & Workflows
 
 ### System Architecture
 
@@ -106,7 +106,7 @@ The lightweight Desktop GUI ("Local Helper") runs directly on the target machine
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Web Client (Dashboard)
 | Technology | Version | Purpose |
@@ -147,7 +147,7 @@ The lightweight Desktop GUI ("Local Helper") runs directly on the target machine
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -209,27 +209,10 @@ The project contains complete Infrastructure as Code (IaC) to deploy the backend
 - **Terraform (`/terraform`)**: Sets up Artifact Registry, Cloud Run, Cloud Storage, and necessary IAM policies.
 - **Cloud Build (`cloudbuild.yaml`)**: Automatically triggered on pushes to the `main` branch. It builds the Docker image and deploys the `operon-server` to Google Cloud Run. 
 
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
 
 <div align="center">
 
-**Built with ❤️ for powerful automation experiences**
+**Built in Gemini Live Agent Challenge**
 
 [⬆ Back to Top](#ui-navigator)
 
